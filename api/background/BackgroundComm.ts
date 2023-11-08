@@ -1,35 +1,22 @@
 import { Debug } from "../../Debug";
 import { MessageFailure } from "../MessageFailure";
-import { Message } from "../Message";
+import { Message, SupportedMessages, SupportedNotifications, MessageListener, MessageSender, MessagePacket } from "../Message";
 
-type SendResponse = (response?: {}) => void;
-
-// TODO move this to CommSpecs.ts file
-type RequestVariant = string;
-type RequestSender = browser.runtime.MessageSender;
-type RequestListener = (sender: RequestSender, ...args: any[]) => any;
 type RequestListenerAlternative<Fn extends Function> = Fn extends (...args: infer ARGS) => infer R ? (...args: ARGS) => Promise<R> : never; // wrap function return type in promise.
-type NotificationVariant = string;
-type NotificationData = object;
-
-type RequestPacket<V extends RequestVariant> = { variant: V, data: any};
-
-interface SupportedRequests { [type: RequestVariant]: RequestListener };
-interface SupportedNotifications { [type: NotificationVariant]: NotificationData };
+type SendResponse = (response?: {}) => void;
 const debug = new Debug();
 
-
-export class BackgroundComm<SR extends SupportedRequests, SN extends SupportedNotifications>
+export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
-	private $listeners: Map<keyof SR, RequestListener>
+	private $listeners: Map<keyof SM, MessageListener>;
 	
 	public constructor()
 	{
-		browser.runtime.onMessage.addListener(this.dispatchRequest.bind(this));
+		browser.runtime.onMessage.addListener(this.dispatchMessage.bind(this));
 		this.$listeners = new Map();
 	}
 	
-	public addMessageListener<V extends keyof SR>(variant: V, listener: RequestListenerAlternative<SR[V]>)
+	public addMessageListener<V extends keyof SM>(variant: V, listener: RequestListenerAlternative<SM[V]>)
 	{
 		this.$listeners.set(variant, listener);
 	}
@@ -39,13 +26,12 @@ export class BackgroundComm<SR extends SupportedRequests, SN extends SupportedNo
 		// const result = browser.tabs.sendMessage(tabId, data); // TODO implement communication to page script
 	}
 	
-	private async dispatchRequest(request: RequestPacket<any>, sender: RequestSender, sendResponse: SendResponse)
+	public async dispatchMessage(packet: MessagePacket, sender: MessageSender, sendResponse: SendResponse)
 	{
-		debug.info("BackgroundComm:dispatchRequest()", "requestVariant=", request.variant); // TODO normalize this
-		const listener = this.$listeners.get(request.variant) ?? this.defaultErrorListener;
-		const result = await listener(request.data, sender);
+		debug.info("BackgroundComm:dispatchRequest()", "packet.variant=", packet.variant);
+		const listener = this.$listeners.get(packet.variant) ?? this.defaultErrorListener; // TODO what to do when listener for this event is not set?
+		const result = await listener(sender, ...packet.data);
 		const response = Message.pack(result);
-		debug.info("Return");
 		return Promise.resolve(response);
 	}
 	

@@ -1,23 +1,19 @@
 import { Debug } from "../../Debug";
-import { Message, MessageList } from "../Message";
+import { Message, SupportedMessages, SupportedNotifications, ResolveMessageArgs, ResolveMessageResponse, MessageResponsePacket } from "../Message";
 
 const debug = new Debug();
-
-export type Function = (...args: any) => any;
-export type RemoveFirstParameter<T extends []> = T extends [arg0: any, ...args: infer ARGS] ? ARGS : T;
-export type ResolveMessageVars<T extends Function> = RemoveFirstParameter<Parameters<T>>;
-export type ResolveMessageResponse<T extends Function> = Promise<Awaited<ReturnType<T>>>;
-
-export class ScriptComm<L extends MessageList>
+export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
-	public async sendMessage<V extends keyof L>(variant: V, ...vars: ResolveMessageVars<L[V]>) : ResolveMessageResponse<L[V]>
+	public async sendMessage<V extends keyof SM>(variant: V, ...args: ResolveMessageArgs<SM[V]>) : ResolveMessageResponse<SM[V]>
 	{
-		debug.beginGroup("./std/api/script/ScriptComm:sendMessage()", "variant=", variant, "vars=", vars);
-		const packet = { variant: variant, vars: [] };
-		const response = await browser.runtime.sendMessage(packet);
+		debug.beginGroup("ScriptComm:sendMessage()", "variant=", variant, "args=", args);
+		const packet = Message.prepare(variant, args);
+		const response = await browser.runtime.sendMessage(packet) as MessageResponsePacket; 
 		const result = Message.unpack(response);
 		debug.info("response=", response, "result=", result);
 		debug.endGroup();
 		return result;
 	}
+	
 }
+
