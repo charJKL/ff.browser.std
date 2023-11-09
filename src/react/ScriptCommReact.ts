@@ -66,7 +66,7 @@ class MessageRequest<SM extends SupportedMessages, SC extends ScriptComm<SM, und
 		this.$then = then;
 		return this;
 	}
-	public async go() : Promise<void>
+	public async send() : Promise<void>
 	{
 		if(isNotUndefined(this.$before)) this.$before();
 		const result = await this.$scriptComm.sendMessage(this.$variant, ...this.$args as ResolveMessageArgs<SM[V]>);
