@@ -9,7 +9,7 @@ export type NotificationData = object;
 export type Function = (...args: any) => any;
 export type RemoveFirstParameter<T extends []> = T extends [arg0: any, ...args: infer ARGS] ? ARGS : T;
 export type ResolveMessageArgs<T extends Function> = RemoveFirstParameter<Parameters<T>>;
-export type ResolveMessageResponse<T extends Function> = Promise<Awaited<ReturnType<T>>>;
+export type ResolveMessageResponse<T extends Function> = ReturnType<T>;
 
 export interface SupportedMessages { [variant: MessageVariant]: MessageListener };
 export interface SupportedNotifications { [variant: NotificationVariant]: NotificationData };
