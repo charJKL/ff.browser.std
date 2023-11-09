@@ -41,7 +41,7 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 	}
 }
 
-class MessageRequest<SM extends SupportedMessages, SC extends ScriptComm<SM, undefined>, V extends keyof SM, VR>
+class MessageRequest<SM extends SupportedMessages, SC extends ScriptComm<SM, any>, V extends keyof SM, VR>
 {
 	private $scriptComm: SC;
 	private $variant: V;
