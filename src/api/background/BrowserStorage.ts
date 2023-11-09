@@ -1,5 +1,5 @@
-import { isNotUndefined } from "../../is";
 import { BackgroundApiError } from "./BackgroundApiError";
+import { isNotUndefined } from "../../ex/isUndefined";
 
 type StorageArea = browser.storage.StorageArea;
 type StorageBlueprint = {[key: string]: any};

@@ -1,6 +1,6 @@
-import { Debug } from "../../Debug";
-import { MessageFailure } from "../MessageFailure";
 import { Message, SupportedMessages, SupportedNotifications, MessageListener, MessageSender, MessagePacket } from "../Message";
+import { MessageFailure } from "../MessageFailure";
+import { Debug } from "../../ex/Debug";
 
 type RequestListenerAlternative<Fn extends Function> = Fn extends (...args: infer ARGS) => infer R ? (...args: ARGS) => Promise<R> : never; // wrap function return type in promise.
 type SendResponse = (response?: {}) => void;

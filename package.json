@@ -1,11 +1,24 @@
 {
-	"name": "@charjkl/ff-browser-std",
-	"version": "1.0.0",
+	"name": "ff-browser-std",
+	"version": "1.0.2",
 	"description": "My Firefox API std lib.",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+	"main": "dist/index.js",
+	"types": "dist/index.d.js",
+	"files": ["/dist"],
+	"repository": {
+		"type" : "git",
+		"url" : "https://github.com/charJKL/ff.browser.std"
 	},
+	"scripts": {
+		"build": "rm -rf ./desc/* && tsc"
+	},
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
 	"devDependencies": {
-		"@types/firefox-webext-browser": "^111.0.2"
+		"@types/firefox-webext-browser": "^111.0.2",
+    "@types/react": "^18.2.24",
+    "@types/react-dom": "^18.2.8"
 	}
 }

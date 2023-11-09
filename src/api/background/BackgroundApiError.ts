@@ -1,5 +1,5 @@
-import { TypedError } from "../../TypedError";
 import { BackgroundApiErrorList } from "./BackgroundApiErrorList";
+import { TypedError } from "../../ex/TypedError";
 
 type BackgroundApiErrorVariant = keyof BackgroundApiErrorList;
 type BackgroundApiErrorInfo = BackgroundApiErrorList;

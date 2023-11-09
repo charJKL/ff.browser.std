@@ -1,5 +1,5 @@
-import { Debug } from "../../Debug";
 import { Message, SupportedMessages, SupportedNotifications, ResolveMessageArgs, ResolveMessageResponse, MessageResponsePacket } from "../Message";
+import { Debug } from "../../ex/Debug";
 
 const debug = new Debug();
 export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifications>
