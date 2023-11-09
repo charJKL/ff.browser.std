@@ -14,7 +14,6 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 	
 	public useMessage<V extends keyof SM>(variant: V, ...args: ResolveMessageArgs<SM[V]>) : [boolean, null | ReturnType<SM[V]>]
 	{
-		console.log("send messadddddddd")
 		// TODO here should be some cache, for not request twice the same.
 		const [isComplete, setIsComplete] = useState(false);
 		const [data, setData] = useState<ReturnType<SM[V]> | null>(null);
