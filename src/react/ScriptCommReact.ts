@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { ScriptComm } from "../api/script/ScriptComm";
-import { SupportedMessages, SupportedNotifications, ResolveMessageArgs } from "../api/Message";
+import { SupportedMessages, SupportedNotifications, ResolveMessageArgs, ResolveMessageResponse } from "../api/Message";
 import { isNotUndefined } from "../ex/isUndefined";
 
 export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedNotifications>
@@ -35,25 +35,25 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 		return [isComplete, data];
 	}
 	
-	public buildMessage<V extends keyof SM>(variant: V, ...args: ResolveMessageArgs<SM[V]>) : MessageRequest<ScriptComm<SM, SN>, V, ResolveMessageArgs<SM[V]>>
+	public buildMessage<V extends keyof SM>(variant: V, ...args: ResolveMessageArgs<SM[V]>) : MessageRequest<SM, ScriptComm<SM, SN>, V, ResolveMessageArgs<SM[V]>>
 	{
 		return new MessageRequest(this.$scriptComm, variant, args);
 	}
 }
 
-class MessageRequest<SC extends ScriptComm<any, any>, V, VR>
+class MessageRequest<SM extends SupportedMessages, SC extends ScriptComm<SM, undefined>, V extends keyof SM, VR>
 {
 	private $scriptComm: SC;
 	private $variant: V;
-	private $vars: VR;
+	private $args: VR;
 	private $before: Function | undefined;
 	private $then : Function | undefined;
 	
-	public constructor(scriptComm: SC, variant: V, vars: VR)
+	public constructor(scriptComm: SC, variant: V, args: VR)
 	{
 		this.$scriptComm = scriptComm;
 		this.$variant = variant;
-		this.$vars = vars;
+		this.$args = args;
 	}
 	
 	public before(before: Function) : this 
@@ -61,7 +61,7 @@ class MessageRequest<SC extends ScriptComm<any, any>, V, VR>
 		this.$before = before;
 		return this;
 	}
-	public then(then: Function) : this // TODO then args should be typed with proper return type.
+	public then(then: (args: ResolveMessageResponse<SM[V]>) => void) : this
 	{
 		this.$then = then;
 		return this;
@@ -69,7 +69,7 @@ class MessageRequest<SC extends ScriptComm<any, any>, V, VR>
 	public async go() : Promise<void>
 	{
 		if(isNotUndefined(this.$before)) this.$before();
-		const result = await this.$scriptComm.sendMessage(this.$variant as unknown as any, ...this.$vars as any[]);
-		if(isNotUndefined(this.$then)) this.$then(result); // TODO resolve return type
+		const result = await this.$scriptComm.sendMessage(this.$variant, ...this.$args as ResolveMessageArgs<SM[V]>);
+		if(isNotUndefined(this.$then)) this.$then(result);
 	}
 }
