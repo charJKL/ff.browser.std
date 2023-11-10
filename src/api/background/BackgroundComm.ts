@@ -2,21 +2,22 @@ import { Message, SupportedMessages, SupportedNotifications, MessageListener, Me
 import { MessageFailure } from "../MessageFailure";
 import { Debug } from "../../ex/Debug";
 
-type RequestListenerAlternative<Fn extends Function> = Fn extends (...args: infer ARGS) => infer R ? (...args: ARGS) => Promise<R> : never; // wrap function return type in promise.
 type SendResponse = (response?: {}) => void;
-const debug = new Debug();
+type ExtendedMessageListener<L extends MessageListener> = (sender: MessageSender, ...args: Parameters<L>) => ReturnType<L>;
 
 export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
-	private $listeners: Map<keyof SM, MessageListener>;
+	private $debug: undefined | Debug ;
+	private $listeners: Map<keyof SM, ExtendedMessageListener<any>>;
 	
-	public constructor()
+	public constructor(debug?: Debug)
 	{
 		browser.runtime.onMessage.addListener(this.dispatchMessage.bind(this));
+		this.$debug = debug;
 		this.$listeners = new Map();
 	}
 	
-	public addMessageListener<V extends keyof SM>(variant: V, listener: RequestListenerAlternative<SM[V]>)
+	public addMessageListener<V extends keyof SM>(variant: V, listener: ExtendedMessageListener<SM[V]>)
 	{
 		this.$listeners.set(variant, listener);
 	}
@@ -28,7 +29,7 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 	
 	public async dispatchMessage(packet: MessagePacket, sender: MessageSender, sendResponse: SendResponse)
 	{
-		debug.info("BackgroundComm:dispatchRequest()", "packet.variant=", packet.variant);
+		this.$debug?.info("BackgroundComm:dispatchRequest()", "packet=", packet, "packet.variant=", packet.variant, "packet.data=", packet.data);
 		const listener = this.$listeners.get(packet.variant) ?? this.defaultErrorListener; // TODO what to do when listener for this event is not set?
 		const result = await listener(sender, ...packet.data);
 		const response = Message.pack(result);

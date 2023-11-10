@@ -1,19 +1,24 @@
-import { Message, SupportedMessages, SupportedNotifications, ResolveMessageArgs, ResolveMessageResponse, MessageResponsePacket } from "../Message";
-import { Debug } from "../../ex/Debug";
+import { Debug } from "../..";
+import { Message, MessagePacketResponse, SupportedMessages, SupportedNotifications} from "../Message";
 
-const debug = new Debug();
 export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
-	public async sendMessage<V extends keyof SM>(variant: V, ...args: ResolveMessageArgs<SM[V]>) : Promise<ResolveMessageResponse<SM[V]>>
+	private $debug: undefined | Debug;
+	
+	public constructor(debug: Debug)
 	{
-		debug.beginGroup("ScriptComm:sendMessage()", "variant=", variant, "args=", args);
-		const packet = Message.prepare(variant, args);
-		const response = await browser.runtime.sendMessage(packet) as MessageResponsePacket; 
-		const result = Message.unpack(response);
-		debug.info("response=", response, "result=", result);
-		debug.endGroup();
-		return result;
+		this.$debug = debug;
 	}
 	
+	public async sendMessage<V extends keyof SM>(variant: V, ...args: Parameters<SM[V]>) : Promise<ReturnType<SM[V]>>
+	{
+		this.$debug?.beginGroup("ScriptComm:sendMessage()", "variant=", variant, "args=", args);
+		const packet = Message.prepare(variant, args);
+		const response = await browser.runtime.sendMessage(packet) as MessagePacketResponse; 
+		const result = Message.unpack(response);
+		this.$debug?.info("ScriptComm:sendMessage()", "response=", response, "result=", result);
+		this.$debug?.endGroup();
+		return result;
+	}
 }
 
