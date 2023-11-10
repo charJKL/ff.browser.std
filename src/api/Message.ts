@@ -2,29 +2,24 @@ import { MessageFailure } from "./MessageFailure";
 
 export type MessageSender = browser.runtime.MessageSender;
 export type MessageVariant = string;
-export type MessageListener = (sender: MessageSender, ...args: any[]) => any;
+export type MessageListener = (...args: any[]) => any;
 export type NotificationVariant = string;
-export type NotificationData = object;
+export type NotificationListener = (...args: any[]) => void;
 
-export type Function = (...args: any) => any;
-export type RemoveFirstParameter<T extends []> = T extends [arg0: any, ...args: infer ARGS] ? ARGS : T;
-export type ResolveMessageArgs<T extends Function> = RemoveFirstParameter<Parameters<T>>;
-export type ResolveMessageResponse<T extends Function> = ReturnType<T>;
+export type SupportedMessages = { [variant: MessageVariant]: MessageListener };
+export type SupportedNotifications = { [variant: NotificationVariant]: NotificationListener };
 
-export interface SupportedMessages { [variant: MessageVariant]: MessageListener };
-export interface SupportedNotifications { [variant: NotificationVariant]: NotificationData };
-
-export type MessagePacket = { variant: MessageVariant, data: any[] };
-export type MessageResponsePacket = { status: "Success" | "Failure", data: any };
+export type MessagePacket = { variant: MessageVariant, data: any[] }
+export type MessagePacketResponse = { status: "Success" | "Failure", data: any };
 
 export class Message
 {
-	public static prepare(variant: any, args: any[]) : MessagePacket
+	public static prepare(variant: any, data: any[]) : MessagePacket
 	{
-		return { variant: variant, data: args };
+		return { variant: variant, data: data };
 	}
 	
-	public static pack(result: any) : MessageResponsePacket
+	public static pack(result: any) : MessagePacketResponse
 	{
 		// https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Chrome_incompatibilities#data_cloning_algorithm
 		const isFailure = (value: any) : value is MessageFailure<any, any> => value instanceof MessageFailure;
@@ -35,18 +30,18 @@ export class Message
 		return { status: "Success", data: result };
 	}
 	
-	private static serializeFailure(failure: Object) : {}
+	public static unpack(response: MessagePacketResponse): any
 	{
-		return {error: "fail"}; // TODO serialize error 
-	}
-	
-	public static unpack(response: MessageResponsePacket): any
-	{
-		const isFailure = (value: MessageResponsePacket) => value.status == "Failure";
+		const isFailure = (value: MessagePacketResponse) => value.status == "Failure";
 		if(isFailure(response))
 		{
 			return {}; // TODO unserialize error
 		}
 		return response.data;
+	}
+	
+	private static serializeFailure(failure: Object) : {}
+	{
+		return {error: "fail"}; // TODO serialize error 
 	}
 }
