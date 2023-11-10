@@ -3,7 +3,7 @@ import { MessageFailure } from "../MessageFailure";
 import { Debug } from "../../ex/Debug";
 
 type SendResponse = (response?: {}) => void;
-type ExtendedMessageListener<L extends MessageListener> = (sender: MessageSender, ...args: Parameters<L>) => ReturnType<L>;
+type ExtendedMessageListener<L extends MessageListener> = (sender: MessageSender, ...args: Parameters<L>) => ReturnType<L> | Promise<ReturnType<L>>;
 
 export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
