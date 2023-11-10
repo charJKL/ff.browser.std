@@ -5,7 +5,7 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 {
 	private $debug: undefined | Debug;
 	
-	public constructor(debug: Debug)
+	public constructor(debug?: Debug)
 	{
 		this.$debug = debug;
 	}
