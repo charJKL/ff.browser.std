@@ -5,7 +5,7 @@ import { isNotUndefined } from "../ex/isUndefined";
 
 export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
-	private $scriptComm: ScriptComm<SM, SM>;
+	private $scriptComm: ScriptComm<SM, SN>;
 	
 	constructor(scriptComm: ScriptComm<SM, SN>)
 	{
