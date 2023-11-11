@@ -18,4 +18,5 @@ export { ScriptCommReact } from "./react/ScriptCommReact";
 export { Debug } from "./ex/Debug";
 export { TypedError} from "./ex/TypedError";
 export { isError, isAnyError} from "./ex/isError";
+export { isSuccess } from "./ex/isSuccess";
 export { isUndefined, isNotUndefined } from "./ex/isUndefined";
