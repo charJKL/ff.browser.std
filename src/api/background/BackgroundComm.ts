@@ -1,9 +1,13 @@
 import { Message, SupportedMessages, SupportedNotifications, MessageListener, MessageSender, MessagePacket } from "../Message";
 import { MessageFailure } from "../MessageFailure";
+import { BackgroundApiError } from "./BackgroundApiError";
 import { Debug } from "../../ex/Debug";
+import { isUndefined } from "../..";
 
 type SendResponse = (response?: {}) => void;
 type ExtendedMessageListener<L extends MessageListener> = (sender: MessageSender, ...args: Parameters<L>) => ReturnType<L> | Promise<ReturnType<L>>;
+
+type BrowserTab = browser.tabs.Tab;
 
 export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
@@ -22,9 +26,22 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 		this.$listeners.set(variant, listener);
 	}
 	
-	public sendNotification<V extends keyof SN>(tabId: number, variant: V, data: SN[V])
+	public async sendNotification<V extends keyof SN>(tabUrl: string, variant: V, ...args: Parameters<SN[V]>) : Promise<boolean | BackgroundApiError<"NoTabsFound"> | BackgroundApiError<"NotificationWasntSuccessful">>
 	{
-		// const result = browser.tabs.sendMessage(tabId, data); // TODO implement communication to page script
+		const WantedUrlIsntOnpenedOnAnyTab = "Wanted url isn't opened on any tab.";
+		const NotificationWasntSendSucessfulToAllTabs = "Notification wasnt send sucessfule to all tabs.";
+		this.$debug?.info("BackgroundComm:sendNotification()", "tabUrl=", tabUrl, "variant=", variant, "args=", args);
+		const tabs = await browser.tabs.query({url: tabUrl}); // TODO should BackgroundComm use directly `browser.tabs`? or had inject `BrowserTabs`?
+		if(tabs.length == 0) return new BackgroundApiError("NoTabsFound", WantedUrlIsntOnpenedOnAnyTab, {url: tabUrl});
+		const results = tabs.map(async function sendNotifiactionToTabs(tab: BrowserTab)
+		{
+			if(isUndefined(tab.id)) return;
+			const packet = Message.prepare(variant, args);
+			return await browser.tabs.sendMessage(tab.id, packet);
+		});
+		const wasErrorOccuredDuringSending = (value) => true; // TODO how to resolve if `browser.tabs.sendMessage` was not sucessful?
+		if(results.find(wasErrorOccuredDuringSending)) return new BackgroundApiError("NotificationWasntSuccessful", NotificationWasntSendSucessfulToAllTabs, {tabs: tabs, results: results})
+		return true;
 	}
 	
 	public async dispatchMessage(packet: MessagePacket, sender: MessageSender, sendResponse: SendResponse)
