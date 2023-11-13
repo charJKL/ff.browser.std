@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ScriptComm } from "../api/script/ScriptComm";
 import { SupportedMessages, SupportedNotifications, CanOmitArgs, MessageListenerArgs, ObjectAlike } from "../api/Message";
 
@@ -40,21 +40,22 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 	
 	public useNotification<V extends keyof SN>(variant: V) : Notification<MessageListenerArgs<SN[V]>>
 	{
-		const [wasRaised, setWasRaised] = useState(false);
 		const [data, setData] = useState<MessageListenerArgs<SN[V]>>({});
+		const wasRaised = useRef(false);
 		
 		useEffect(() => {
 			this.$scriptComm.addNotificationListener(variant, onNotification as SN[V]); // `as` is required because https://stackoverflow.com/questions/56505560/how-to-fix-ts2322-could-be-instantiated-with-a-different-subtype-of-constraint
 			function onNotification(args: ObjectAlike)
 			{
-				setWasRaised(true);
 				setData(args);
+				wasRaised.current = true;
 			}
 			return () => this.$scriptComm.removeNotificationListener(variant, onNotification as SN[V]);
 		}, [variant]);
 		
-		if(wasRaised == true) setWasRaised(false);
-		return {wasRaised: wasRaised, ...data};
+		const notification = { wasRaised: wasRaised.current, ...data };
+		if(wasRaised.current == true) wasRaised.current = false;
+		return notification;
 	}
 	
 	public async sendMessage<V extends keyof SM>(variant: CanOmitArgs<SM, V>) :Promise<ReturnType<SM[V]>>;
