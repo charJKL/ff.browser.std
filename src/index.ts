@@ -20,3 +20,4 @@ export { TypedError} from "./ex/TypedError";
 export { isError, isAnyError} from "./ex/isError";
 export { isSuccess } from "./ex/isSuccess";
 export { isUndefined, isNotUndefined } from "./ex/isUndefined";
+export { isNull, isNotNull } from "./ex/isNull";
