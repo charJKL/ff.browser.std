@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { ScriptComm } from "../api/script/ScriptComm";
-import { SupportedMessages, SupportedNotifications } from "../api/Message";
-import { isNotUndefined } from "../ex/isUndefined";
+import { SupportedMessages, SupportedNotifications, CanOmitArgs, MessageListenerArgs, ObjectAlike } from "../api/Message";
+
+export type BackgroundState<T> = [T | Waiting, (state: T) => void];
+export type Notification<T> = { wasRaised: boolean } & Partial<T>;
 
 export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
@@ -12,64 +14,70 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 		this.$scriptComm = scriptComm;
 	}
 	
-	public useMessage<V extends keyof SM>(variant: V, ...args: Parameters<SM[V]>) : [boolean, null | ReturnType<SM[V]>]
+	public useBackgroundState<V extends keyof SM>(variant: CanOmitArgs<SM, V>) : BackgroundState<ReturnType<SM[V]>>;
+	public useBackgroundState<V extends keyof SM>(variant: V, args: MessageListenerArgs<SM[V]>) : BackgroundState<ReturnType<SM[V]>>;
+	public useBackgroundState<V extends keyof SM>(variant: V, args?: MessageListenerArgs<SM[V]>) : BackgroundState<ReturnType<SM[V]>>
 	{
-		// TODO here should be some cache, for not request twice the same.
-		const [isComplete, setIsComplete] = useState(false);
-		const [data, setData] = useState<ReturnType<SM[V]> | null>(null);
+		const [data, setData] = useState<ReturnType<SM[V]> | Waiting>(new Waiting());
+		
 		useEffect(() => {
 			let ignore = false;
-			this.$scriptComm.sendMessage(variant, ...args).then(thenHandler).catch(catchHandler);
+			this.$scriptComm.sendMessage(variant, args).then(thenHandler).catch(catchHandler)
 			function thenHandler(data: ReturnType<SM[V]>)
 			{
 				if(ignore == true) return;
-				setIsComplete(true);
-				setData(data);
+				setData(data)
 			}
 			function catchHandler()
 			{
-				setIsComplete(false);
+				// TODO what to do here?
 			}
 			return () => { ignore = true; }
-		}, [variant, ...args]);
-		return [isComplete, data];
+		}, [variant]);
+		
+		return [data, setData];
 	}
 	
-	public buildMessage<V extends keyof SM>(variant: V, ...args: Parameters<SM[V]>) : MessageRequest<SM, V, Parameters<SM[V]>, ReturnType<SM[V]>>
+	public useNotification<V extends keyof SN>(variant: V) : Notification<MessageListenerArgs<SN[V]>>
 	{
-		return new MessageRequest(this.$scriptComm, variant, args);
+		const [wasRaised, setWasRaised] = useState(false);
+		const [data, setData] = useState<MessageListenerArgs<SN[V]>>({});
+		
+		useEffect(() => {
+			this.$scriptComm.addNotificationListener(variant, onNotification as SN[V]); // `as` is required because https://stackoverflow.com/questions/56505560/how-to-fix-ts2322-could-be-instantiated-with-a-different-subtype-of-constraint
+			function onNotification(args: ObjectAlike)
+			{
+				setWasRaised(true);
+				setData(args);
+			}
+			return () => this.$scriptComm.removeNotificationListener(variant, onNotification as SN[V]);
+		}, [variant]);
+		
+		if(wasRaised == true) setWasRaised(false);
+		return {wasRaised: wasRaised, ...data};
+	}
+	
+	public async sendMessage<V extends keyof SM>(variant: CanOmitArgs<SM, V>) :Promise<ReturnType<SM[V]>>;
+	public async sendMessage<V extends keyof SM>(variant: V, args: MessageListenerArgs<SM[V]>) : Promise<ReturnType<SM[V]>>;
+	public async sendMessage<V extends keyof SM>(variant: V, args?: MessageListenerArgs<SM[V]>) : Promise<ReturnType<SM[V]>>
+	{
+		return await this.$scriptComm.sendMessage(variant, args);
 	}
 }
 
-class MessageRequest<SM extends SupportedMessages, V extends keyof SM, VArgs extends Parameters<SM[V]>, VResult>
+export function isWaiting(data: any) : data is Waiting
 {
-	private $scriptComm: ScriptComm<SM, any>;
-	private $variant: V;
-	private $args: VArgs;
-	private $before: Function | undefined;
-	private $then : Function | undefined;
-	
-	public constructor(scriptComm: ScriptComm<SM, any>, variant: V, args: VArgs)
-	{
-		this.$scriptComm = scriptComm;
-		this.$variant = variant;
-		this.$args = args;
-	}
-	
-	public before(before: Function) : this 
-	{
-		this.$before = before;
-		return this;
-	}
-	public then(then: (args: VResult) => void) : this
-	{
-		this.$then = then;
-		return this;
-	}
-	public async send() : Promise<void>
-	{
-		if(isNotUndefined(this.$before)) this.$before();
-		const result = await this.$scriptComm.sendMessage(this.$variant, ...this.$args);
-		if(isNotUndefined(this.$then)) this.$then(result);
-	}
+	if(data instanceof Waiting) return true;
+	return false;
+}
+
+export function wasRaised<T extends Notification<any>>(notification: T) : notification is Required<T>
+{
+	if(notification.wasRaised == true) return true;
+	return false;
+}
+
+class Waiting
+{
+	private desc = "Waiting on response"
 }
