@@ -1,13 +1,12 @@
-import { Message, SupportedMessages, SupportedNotifications, MessageListener, MessageSender, MessagePacket } from "../Message";
+import { Message, SupportedMessages, SupportedNotifications, MessageListener, MessageListenerArgs, MessageSender, MessagePacket } from "../Message";
 import { MessageFailure } from "../MessageFailure";
 import { BackgroundApiError } from "./BackgroundApiError";
 import { Debug } from "../../ex/Debug";
-import { isUndefined } from "../..";
-
-type SendResponse = (response?: {}) => void;
-type ExtendedMessageListener<L extends MessageListener> = (sender: MessageSender, ...args: Parameters<L>) => ReturnType<L> | Promise<ReturnType<L>>;
+import { isUndefined } from "../../ex/isUndefined";
 
 type BrowserTab = browser.tabs.Tab;
+type SendResponse = (response?: {}) => void;
+type ExtendedMessageListener<L extends MessageListener> = (args: {sender: MessageSender} & MessageListenerArgs<L>) => Promise<ReturnType<L>> | ReturnType<L>;
 
 export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
@@ -26,7 +25,7 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 		this.$listeners.set(variant, listener);
 	}
 	
-	public async sendNotification<V extends keyof SN>(tabUrl: string, variant: V, ...args: Parameters<SN[V]>) : Promise<boolean | BackgroundApiError<"NoTabsFound"> | BackgroundApiError<"NotificationWasntSuccessful">>
+	public async sendNotification<V extends keyof SN>(tabUrl: string, variant: V, args: MessageListenerArgs<SN[V]>) : Promise<boolean | BackgroundApiError<"NoTabsFound"> | BackgroundApiError<"NotificationWasntSuccessful">>
 	{
 		const WantedUrlIsntOnpenedOnAnyTab = "Wanted url isn't opened on any tab.";
 		const NotificationWasntSendSucessfulToAllTabs = "Notification wasnt send sucessfule to all tabs.";
@@ -39,7 +38,7 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 			const packet = Message.prepare(variant, args);
 			return await browser.tabs.sendMessage(tab.id, packet);
 		});
-		const wasErrorOccuredDuringSending = (value) => true; // TODO how to resolve if `browser.tabs.sendMessage` was not sucessful?
+		const wasErrorOccuredDuringSending = () => true; // TODO how to resolve if `browser.tabs.sendMessage` was not sucessful?
 		if(results.find(wasErrorOccuredDuringSending)) return new BackgroundApiError("NotificationWasntSuccessful", NotificationWasntSendSucessfulToAllTabs, {tabs: tabs, results: results})
 		return true;
 	}
@@ -48,7 +47,7 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 	{
 		this.$debug?.info("BackgroundComm:dispatchRequest()", "packet=", packet, "packet.variant=", packet.variant, "packet.data=", packet.data);
 		const listener = this.$listeners.get(packet.variant) ?? this.defaultErrorListener; // TODO what to do when listener for this event is not set?
-		const result = await listener(sender, ...packet.data);
+		const result = await listener({sender, ...packet.data});
 		const response = Message.pack(result);
 		return Promise.resolve(response);
 	}

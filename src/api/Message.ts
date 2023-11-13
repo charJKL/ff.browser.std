@@ -1,20 +1,23 @@
 import { MessageFailure } from "./MessageFailure";
 
+export type ObjectAlike = any; // must be any because https://stackoverflow.com/questions/77460398/why-object-doesnt-conform-type-described-by-index-signatures
 export type MessageSender = browser.runtime.MessageSender;
 export type MessageVariant = string;
-export type MessageListener = (...args: any[]) => any;
+export type MessageListener = (args: ObjectAlike) => any;
 export type NotificationVariant = string;
-export type NotificationListener = (...args: any[]) => void;
+export type NotificationListener = (args: ObjectAlike) => void;
+export type MessageListenerArgs<L extends (args: any) => any> = Parameters<L>[0];
+export type CanOmitArgs<SM extends SupportedMessages, VM extends keyof SM> = {} extends MessageListenerArgs<SM[VM]> ? VM : never;
 
 export type SupportedMessages = { [variant: MessageVariant]: MessageListener };
 export type SupportedNotifications = { [variant: NotificationVariant]: NotificationListener };
 
-export type MessagePacket = { variant: MessageVariant, data: any[] }
+export type MessagePacket = { variant: MessageVariant, data: ObjectAlike }
 export type MessagePacketResponse = { status: "Success" | "Failure", data: any };
 
 export class Message
 {
-	public static prepare(variant: any, data: any[]) : MessagePacket
+	public static prepare(variant: any, data: ObjectAlike) : MessagePacket
 	{
 		return { variant: variant, data: data };
 	}
