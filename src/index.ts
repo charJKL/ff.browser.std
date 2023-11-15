@@ -22,3 +22,4 @@ export { isError, isAnyError} from "./ex/isError";
 export { isSuccess } from "./ex/isSuccess";
 export { isUndefined, isNotUndefined } from "./ex/isUndefined";
 export { isNull, isNotNull } from "./ex/isNull";
+export { isArray, isNotArray } from "./ex/isArray";
