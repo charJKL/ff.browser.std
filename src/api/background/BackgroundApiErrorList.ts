@@ -8,6 +8,9 @@ export interface BackgroundApiErrorList
 	"BrowserStorage": {reason: string},
 	"NoTabsFound": {url: string},
 	"NotificationWasntSuccessful": {tabs: BrowserTab[], results: any[] } // TODO what type `results` has?
-	"BrowserApiProblem": {}
+	"BrowserApiProblem": {},
+	"NetRequestBlock": {reason: string},
+	"NetRequestBlockRegexpNotValid": {regexp: string, reason: string},
+	"NetRequestBlockRuleDoesntExist": {ruleId: number}
 }
 
