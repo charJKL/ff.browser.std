@@ -18,7 +18,7 @@ export { wasRaised, isWaiting } from "./react/ScriptCommReact";
 
 export { Debug } from "./ex/Debug";
 export { TypedError} from "./ex/TypedError";
-export { isError, isAnyError} from "./ex/isError";
+export { isError } from "./ex/isError";
 export { isSuccess } from "./ex/isSuccess";
 export { isUndefined, isNotUndefined } from "./ex/isUndefined";
 export { isNull, isNotNull } from "./ex/isNull";

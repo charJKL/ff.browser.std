@@ -4,6 +4,7 @@ export type TypedErrorInfo = any;
 
 export class TypedError<V extends TypedErrorVariant, I extends TypedErrorInfo> extends Error
 {
+	public static Any = Symbol("AnyPossibleError");
 	private $variant : V;
 	private $info : I;
 	
