@@ -16,7 +16,7 @@ export class TypedError<V extends TypedErrorVariant, I extends TypedErrorInfo> e
 		this.$debug = debug;
 		this.$variant = variant;
 		this.$info = info;
-		this.$debug?.log(`${this.name}, variant=$0, message=$1, info=$2`, Debug.Error, variant, message, info);
+		this.$debug?.log(`${new.target.name}, variant=$0, message=$1, info=$2`, Debug.Error, variant, message, info);
 	}
 	
 	public get variant() : V
