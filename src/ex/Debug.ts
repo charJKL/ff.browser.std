@@ -5,6 +5,7 @@ import "../native/Array";
 export class Debug 
 {
 	public static None = Symbol("Debug.Format.None");
+	public static Error = Symbol("Debug.Format.Error");
 	public static ScriptMessage = Symbol("Debug.Format.ScriptMessage");
 	public static ScriptNotification = Symbol("Debug.Format.ScriptNotification");
 	public static BackgroundMessage = Symbol("Debug.Format.BackgroundNotification");
@@ -13,6 +14,7 @@ export class Debug
 	private static Formats = 
 	{
 		[Debug.None]: "",
+		[Debug.Error]: "background: rgba(205, 97, 85, 1);", // red
 		[Debug.ScriptMessage]: "background: rgba(125, 206, 160, 1);", // green
 		[Debug.ScriptNotification]: "background: rgba(247, 220, 111, 1);", // yellow
 		[Debug.BackgroundMessage]: "background: rgba(127, 179, 213, 1);", // blue
