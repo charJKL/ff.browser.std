@@ -65,13 +65,13 @@ export class Debug
 			if(styles.contains(args[0])) return [arg0, args[0], args.slice(1)];
 			throw new ResolveOverloadArgsException("Debug.log()");
 		}
-		const [rawEntireMessage, rawFormat, values] = resolveArgs(arguments, arg0, args);
+		const [rawEntireMessage, rawFormat, rawValues] = resolveArgs(arguments, arg0, args);
 		
 		const [rawMessage, rawVars] = rawEntireMessage.find("=$").findBefore(" ").cut();
 		const format = Debug.Formats[rawFormat];
 		const message = rawMessage.trim().trimSuffix(",");
 		const vars = rawVars.replaceAll(/\$[0-9]/g, "%o");
-		
+		const values = this.transformArgs(rawValues);
 		return { message, format, vars, values };
 	}
 	
