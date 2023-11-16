@@ -25,13 +25,13 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 		this.$listeners.set(variant, listener);
 	}
 	
+	static WantedUrlIsntOnpenedOnAnyTab = "Wanted url isn't opened on any tab.";
+	static NotificationWasntSendSucessfulToAllTabs = "Notification wasnt send sucessfule to all tabs.";
 	public async sendNotification<V extends keyof SN>(tabUrl: string, variant: V, args: MessageListenerArgs<SN[V]>) : Promise<boolean | BackgroundApiError<"NoTabsFound"> | BackgroundApiError<"NotificationWasntSuccessful">>
 	{
-		const WantedUrlIsntOnpenedOnAnyTab = "Wanted url isn't opened on any tab.";
-		const NotificationWasntSendSucessfulToAllTabs = "Notification wasnt send sucessfule to all tabs.";
-		this.$debug?.info("BackgroundComm:sendNotification()", "tabUrl=", tabUrl, "variant=", variant, "args=", args);
+		this.$debug?.log("BackgroundComm.sendNotification(), tabUrl=$0, variant=$1, args=$2", Debug.BackgroundNotification, tabUrl, variant, args);
 		const tabs = await browser.tabs.query({url: tabUrl}); // TODO should BackgroundComm use directly `browser.tabs`? or had inject `BrowserTabs`?
-		if(tabs.length == 0) return new BackgroundApiError("NoTabsFound", WantedUrlIsntOnpenedOnAnyTab, {url: tabUrl});
+		if(tabs.length == 0) return new BackgroundApiError("NoTabsFound", BackgroundComm.WantedUrlIsntOnpenedOnAnyTab, {url: tabUrl});
 		const results = tabs.map(async function sendNotifiactionToTabs(tab: BrowserTab)
 		{
 			if(isUndefined(tab.id)) return;
@@ -39,22 +39,22 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 			return await browser.tabs.sendMessage(tab.id, packet);
 		});
 		const wasErrorOccuredDuringSending = () => true; // TODO how to resolve if `browser.tabs.sendMessage` was not sucessful?
-		if(results.find(wasErrorOccuredDuringSending)) return new BackgroundApiError("NotificationWasntSuccessful", NotificationWasntSendSucessfulToAllTabs, {tabs: tabs, results: results})
+		if(results.find(wasErrorOccuredDuringSending)) return new BackgroundApiError("NotificationWasntSuccessful", BackgroundComm.NotificationWasntSendSucessfulToAllTabs, {tabs: tabs, results: results})
 		return true;
 	}
 	
 	public async dispatchMessage(packet: MessagePacket, sender: MessageSender, sendResponse: SendResponse)
 	{
-		this.$debug?.info("BackgroundComm:dispatchRequest()", "packet=", packet, "packet.variant=", packet.variant, "packet.data=", packet.data);
+		this.$debug?.log("BackgroundComm.dispatchRequest(), packet=$0", Debug.BackgroundMessage, packet);
 		const listener = this.$listeners.get(packet.variant) ?? this.defaultErrorListener; // TODO what to do when listener for this event is not set?
 		const result = await listener({sender, ...packet.data});
 		const response = Message.pack(result);
 		return Promise.resolve(response);
 	}
 	
+	static ThereIsNoListenerForThisMessage = "There is no listener for this message.";
 	private async defaultErrorListener() : Promise<MessageFailure<"MissingListener", {}>>
 	{
-		const ThereIsNoListenerForThisMessage = "There is no listener for this message.";
-		return new MessageFailure("MissingListener", ThereIsNoListenerForThisMessage, {});
+		return new MessageFailure("MissingListener", BackgroundComm.ThereIsNoListenerForThisMessage, {});
 	}
 }

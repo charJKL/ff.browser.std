@@ -11,8 +11,8 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 	
 	public constructor(debug?: Debug)
 	{
-		browser.runtime.onMessage.addListener(this.dispatchNotification.bind(this));
 		this.$debug = debug;
+		browser.runtime.onMessage.addListener(this.dispatchNotification.bind(this));
 		this.$listeners = new Map();
 	}
 	
@@ -28,12 +28,12 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 		}
 		const [variant, args] = resolveArgs(arguments, arg0, arg1);
 		
-		this.$debug?.beginGroup("ScriptComm:sendMessage()", "variant=", variant, "args=", args);
+		this.$debug?.logFunction("ScriptComm.sendMessage(), variant=$0, args=$1", Debug.ScriptMessage, variant, args);
 		const packet = Message.prepare(variant, args);
 		const response = await browser.runtime.sendMessage(packet) as MessagePacketResponse; 
 		const result = Message.unpack(response);
-		this.$debug?.info("ScriptComm:sendMessage()", "response=", response, "result=", result);
-		this.$debug?.endGroup();
+		this.$debug?.log("ScriptComm.sendMessage(), response=$0, result=$1", response, result);
+		this.$debug?.endFunction();
 		return result;
 	}
 
@@ -49,7 +49,7 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 
 	private async dispatchNotification(packet: MessagePacket, sender: MessageSender, sendResponse: SendResponse) 
 	{
-		this.$debug?.info("ScriptComm::dispatchNotification()", "packer=", packet, "packet.variant=", packet.variant, "packet.data=", packet.data);
+		this.$debug?.log("ScriptComm.dispatchNotification(), packet=$0", Debug.ScriptNotification, packet);
 		const listener = this.$listeners.get(packet.variant);
 		if(isUndefined(listener)) return;
 		await listener(packet.data);
