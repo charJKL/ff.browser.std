@@ -1,4 +1,5 @@
 import { MessageFailure } from "./MessageFailure";
+import { MessageFailureVariant, MessageFailureInfo } from "./MessageFailure";
 
 export type ObjectAlike = any; // must be any because https://stackoverflow.com/questions/77460398/why-object-doesnt-conform-type-described-by-index-signatures
 export type MessageSender = browser.runtime.MessageSender;
@@ -14,6 +15,9 @@ export type SupportedNotifications = { [variant: NotificationVariant]: Notificat
 
 export type MessagePacket = { variant: MessageVariant, data: ObjectAlike }
 export type MessagePacketResponse = { status: "Success" | "Failure", data: any };
+export type MessagePacketFailure = { status: "Failure", data: SerializedMessageFailure };
+type SerializedMessageFailure = { variant: MessageFailureVariant, message: string, info: MessageFailureInfo };
+
 
 export class Message
 {
@@ -22,29 +26,34 @@ export class Message
 		return { variant: variant, data: data };
 	}
 	
-	public static pack(result: any) : MessagePacketResponse
+	public static pack(result: any | MessageFailure<any, any>) : MessagePacketResponse
 	{
 		// https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Chrome_incompatibilities#data_cloning_algorithm
-		const isFailure = (value: any) : value is MessageFailure<any, any> => value instanceof MessageFailure;
-		if(isFailure(result))
+		const isSuccess = (value: any | MessageFailure<any, any>) : value is any => value instanceof MessageFailure === false;
+		switch(isSuccess(result))
 		{
-			return { status: "Failure", data: this.serializeFailure(result) }
+			case true:
+				return { status: "Success", data: result };
+				
+			case false:
+				return { status: "Failure", data: this.serializeFailure(result) }
 		}
-		return { status: "Success", data: result };
 	}
 	
 	public static unpack(response: MessagePacketResponse): any
 	{
-		const isFailure = (value: MessagePacketResponse) => value.status == "Failure";
-		if(isFailure(response))
+		switch(response.status)
 		{
-			return {}; // TODO unserialize error
+			case "Success":
+				return response.data;
+				
+			case "Failure":
+				return new MessageFailure(response.data.variant, response.data.message, response.data.info);
 		}
-		return response.data;
 	}
 	
-	private static serializeFailure(failure: Object) : {}
+	private static serializeFailure(failure: MessageFailure<any, any>) : SerializedMessageFailure
 	{
-		return {error: "fail"}; // TODO serialize error 
+		return { variant: failure.variant, message: failure.message, info: failure.info } // thats all data we need in frontend
 	}
 }
