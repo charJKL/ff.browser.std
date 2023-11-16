@@ -1,3 +1,4 @@
+import { Debug } from "./Debug";
 
 export type TypedErrorVariant = string;
 export type TypedErrorInfo = any;
@@ -5,14 +6,17 @@ export type TypedErrorInfo = any;
 export class TypedError<V extends TypedErrorVariant, I extends TypedErrorInfo> extends Error
 {
 	public static Any = Symbol("AnyPossibleError");
+	private $debug?: Debug;
 	private $variant : V;
 	private $info : I;
 	
-	constructor(variant: V, message: string, info: I)
+	constructor(variant: V, message: string, info: I, debug?: Debug)
 	{
 		super(message);
+		this.$debug = debug;
 		this.$variant = variant;
 		this.$info = info;
+		this.$debug?.log(`${this.name}, variant=$0, message=$1, info=$2`, Debug.Error, variant, message, info);
 	}
 	
 	public get variant() : V

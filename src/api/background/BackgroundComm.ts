@@ -10,14 +10,14 @@ type ExtendedMessageListener<L extends MessageListener> = (args: {sender: Messag
 
 export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
-	private $debug: undefined | Debug ;
+	private $debug: Debug ;
 	private $listeners: Map<keyof SM, ExtendedMessageListener<any>>;
 	
-	public constructor(debug?: Debug)
+	public constructor(debug: Debug)
 	{
 		browser.runtime.onMessage.addListener(this.dispatchMessage.bind(this));
-		this.$debug = debug;
 		this.$listeners = new Map();
+		this.$debug = debug;
 	}
 	
 	public addMessageListener<V extends keyof SM>(variant: V, listener: ExtendedMessageListener<SM[V]>)
@@ -31,7 +31,7 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 	{
 		this.$debug?.log("BackgroundComm.sendNotification(), tabUrl=$0, variant=$1, args=$2", Debug.BackgroundNotification, tabUrl, variant, args);
 		const tabs = await browser.tabs.query({url: tabUrl}); // TODO should BackgroundComm use directly `browser.tabs`? or had inject `BrowserTabs`?
-		if(tabs.length == 0) return new BackgroundApiError("NoTabsFound", BackgroundComm.WantedUrlIsntOnpenedOnAnyTab, {url: tabUrl});
+		if(tabs.length == 0) return new BackgroundApiError("NoTabsFound", BackgroundComm.WantedUrlIsntOnpenedOnAnyTab, {url: tabUrl}, this.$debug);
 		const results = tabs.map(async function sendNotifiactionToTabs(tab: BrowserTab)
 		{
 			if(isUndefined(tab.id)) return;
@@ -39,7 +39,7 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 			return await browser.tabs.sendMessage(tab.id, packet);
 		});
 		const wasErrorOccuredDuringSending = () => true; // TODO how to resolve if `browser.tabs.sendMessage` was not sucessful?
-		if(results.find(wasErrorOccuredDuringSending)) return new BackgroundApiError("NotificationWasntSuccessful", BackgroundComm.NotificationWasntSendSucessfulToAllTabs, {tabs: tabs, results: results})
+		if(results.find(wasErrorOccuredDuringSending)) return new BackgroundApiError("NotificationWasntSuccessful", BackgroundComm.NotificationWasntSendSucessfulToAllTabs, {tabs: tabs, results: results}, this.$debug)
 		return true;
 	}
 	

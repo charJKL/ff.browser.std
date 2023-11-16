@@ -1,5 +1,6 @@
 import { BackgroundApiError } from "./BackgroundApiError";
 import { isNotUndefined } from "../../ex/isUndefined";
+import { Debug } from "../../ex/Debug";
 
 type StorageArea = browser.storage.StorageArea;
 type StorageBlueprint = {[key: string]: any};
@@ -9,31 +10,33 @@ export class BrowserStorage<B extends StorageBlueprint>
 {
 	private $storage: StorageArea;
 	private $blueprint: B;
+	private $debug : Debug;
 	
-	public constructor(storage: StorageArea, blueprint: B)
+	public constructor(storage: StorageArea, blueprint: B, debug: Debug)
 	{
 		this.$storage = storage;
 		this.$blueprint = blueprint;
+		this.$debug = debug;
 	}
 	
 	public get<I extends StorageItemNames<B>>(item: I) : Promise<B[I] | BackgroundApiError<"BrowserStorage">>
 	{
 		const entry = { [item]: this.$blueprint[item] };
 		const flatReturnedObject = (obj: StorageBlueprint) : B[I] => obj[item as keyof StorageBlueprint];
-		return this.$storage.get(entry).then(this.decode).then(flatReturnedObject).catch(this.catchHandler);
+		return this.$storage.get(entry).then(this.decode).then(flatReturnedObject).catch(this.catchHandler.bind(this));
 	}
 	
 	public save<I extends StorageItemNames<B>>(item: I, value: B[I]) : Promise<B[I] | BackgroundApiError<"BrowserStorage">>
 	{
 		const entry = { [item]: value }
 		const returnSavedObject = () => value;
-		return this.$storage.set(this.encode(entry)).then(returnSavedObject).catch(this.catchHandler);
+		return this.$storage.set(this.encode(entry)).then(returnSavedObject).catch(this.catchHandler.bind(this));
 	}
 	
 	public remove<I extends StorageItemNames<B>>(item: I): Promise<boolean | BackgroundApiError<"BrowserStorage">>
 	{
 		const returnTrueOnSuccess = () => true;
-		return this.$storage.remove(item as string).then(returnTrueOnSuccess).catch(this.catchHandler);
+		return this.$storage.remove(item as string).then(returnTrueOnSuccess).catch(this.catchHandler.bind(this));
 	}
 	
 	private encode(value: StorageBlueprint) : StorageBlueprint
@@ -54,9 +57,10 @@ export class BrowserStorage<B extends StorageBlueprint>
 		return result;
 	}
 	
+	static DuringApiCallBrowserThrowInternalError = "During api call browser throw internal error.";
 	private catchHandler(reason: any) : BackgroundApiError<"BrowserStorage">
 	{
-		return new BackgroundApiError("BrowserStorage", "During api call browser throw internal error.", {reason: reason as string});
+		return new BackgroundApiError("BrowserStorage", BrowserStorage.DuringApiCallBrowserThrowInternalError, {reason: reason as string}, this.$debug);
 	}
 }
 

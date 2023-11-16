@@ -1,6 +1,7 @@
 import { BackgroundApiError } from "./BackgroundApiError";
 import { isError } from "../../ex/isError";
 import { isUndefined } from "../../ex/isUndefined";
+import { Debug } from "../../ex/Debug";
 
 
 // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/declarativeNetRequest
@@ -18,15 +19,17 @@ export type NetRequestRuleId = { id: number };
 export class NetRequestBlock
 {
 	private $redirect: string;
-	
-	public constructor(redirect: string)
+	private $debug: Debug;
+		
+	public constructor(redirect: string, debug: Debug)
 	{
 		this.$redirect = redirect;
+		this.$debug = debug;
 	}
 	
 	public async getRules() : Promise<NetRequestRule[] | BackgroundApiError<"NetRequestBlock">>
 	{
-		return browser.declarativeNetRequest.getDynamicRules().catch(this.catchHandler);
+		return browser.declarativeNetRequest.getDynamicRules().catch(this.catchHandler.bind(this));
 	}
 	
 	public async addRule(rule: NetRequestRulePart) : Promise<NetRequestRule | BackgroundApiError<"NetRequestBlock"> | BackgroundApiError<"RegexpNotSupported">>
@@ -52,7 +55,7 @@ export class NetRequestBlock
 					netRequestRule.action.redirect.regexSubstitution = this.$redirect + "#\\0"; // suffix url with orginal target url
 		
 		const packet : NetRequestUpdatePacket = { addRules: [netRequestRule] };
-		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(this.catchHandler);
+		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(this.catchHandler.bind(this));
 		if(isError("NetRequestBlock",result)) return result;
 		return netRequestRule;
 	}
@@ -68,7 +71,7 @@ export class NetRequestBlock
 		
 		rule.condition.regexFilter = change.regexp;
 		const packet : NetRequestUpdatePacket = { addRules: [rule] };
-		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(this.catchHandler);
+		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(this.catchHandler.bind(this));
 		if(isError("NetRequestBlock", result)) return result;
 		return rule;
 	}
@@ -81,7 +84,7 @@ export class NetRequestBlock
 		
 		const packet = {} as NetRequestUpdatePacket;
 					packet.removeRuleIds = [rule.id];
-		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(this.catchHandler);
+		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(this.catchHandler.bind(this));
 		if(isError("NetRequestBlock", result)) return result;
 		return true;
 	}
@@ -96,7 +99,7 @@ export class NetRequestBlock
 					regexpArgs.requireCapturing = true;
 
 		const isRegexSupportedResult = await browser.declarativeNetRequest.isRegexSupported(regexpArgs);
-		if(isNotSupported(isRegexSupportedResult)) return new BackgroundApiError("RegexpNotSupported", NetRequestBlock.RegexpValueForBlockingRuleIsNotSupported, {regexp, reason: isRegexSupportedResult.reason});
+		if(isNotSupported(isRegexSupportedResult)) return new BackgroundApiError("RegexpNotSupported", NetRequestBlock.RegexpValueForBlockingRuleIsNotSupported, {regexp, reason: isRegexSupportedResult.reason}, this.$debug);
 		return isRegexSupportedResult.isSupported;
 	}
 	
@@ -107,7 +110,7 @@ export class NetRequestBlock
 		if(isError("NetRequestBlock", rules)) return rules;
 		
 		const rule = rules.find((rule) => rule.id == ruleId);
-		if(isUndefined(rule)) return new BackgroundApiError("RuleDoesntExist", NetRequestBlock.RuleWithWantedIdDoesntExist, {rules, ruleId})
+		if(isUndefined(rule)) return new BackgroundApiError("RuleDoesntExist", NetRequestBlock.RuleWithWantedIdDoesntExist, {rules, ruleId}, this.$debug)
 		return rule;
 	}
 	
@@ -126,6 +129,6 @@ export class NetRequestBlock
 	static CallToBrowserAPIMethodReturnException = "Call to one of `browser.declarativeNetRequest` methods return browser internal exception.";
 	private catchHandler(reason: any) : BackgroundApiError<"NetRequestBlock">
 	{
-		return new BackgroundApiError("NetRequestBlock", NetRequestBlock.CallToBrowserAPIMethodReturnException, {reason});
+		return new BackgroundApiError("NetRequestBlock", NetRequestBlock.CallToBrowserAPIMethodReturnException, {reason}, this.$debug);
 	}
 }
