@@ -77,7 +77,7 @@ export class Debug
 	
 	private transformArgs(args: any[]) : any[]
 	{
-		return args.map(a => this.transformType(a));
+		return args.map(a => this.transformType(a)).map(a => this.transformErrorType(a));
 	}
 	
 	private transformType(argument: any) : any
@@ -93,5 +93,15 @@ export class Debug
 			case "symbol": return argument;
 			case "function": return argument;
 		}
+	}
+	
+	// Default console.log() output for `Error` class is annoying,
+	// so we get rid of any kind relation to `Error`. This way
+	// we loose some information but it's okey, better this than
+	// default useless debug output.
+	private transformErrorType(argument: any) : any
+	{
+		if((argument instanceof Error) == false) return argument;
+		return JSON.parse(JSON.stringify(argument));
 	}
 }
