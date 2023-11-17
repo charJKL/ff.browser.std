@@ -34,11 +34,11 @@ export class NetRequestBlock
 	
 	public async addRule(rule: NetRequestRulePart) : Promise<NetRequestRule | BackgroundApiError<"NetRequestBlock"> | BackgroundApiError<"RegexpNotSupported">>
 	{
-		const uniqueId = await this.getUniqueId();
-		if(isError("NetRequestBlock", uniqueId)) return uniqueId;
-		
 		const isRegexpValid = await this.isRegexpSupported(rule.regexp);
 		if(isError("RegexpNotSupported", isRegexpValid)) return isRegexpValid;
+		
+		const uniqueId = await this.getUniqueId();
+		if(isError("NetRequestBlock", uniqueId)) return uniqueId;
 		
 		// TODO read and check if limits are not reached.
 		
@@ -119,11 +119,12 @@ export class NetRequestBlock
 		const rules = await this.getRules();
 		if(isError("NetRequestBlock", rules)) return rules;
 		
-		for(let i = 1; ; i++) // TODO here should be some limit, because it may happen that there will be no free id.
+		const rulesIds = rules.map(r => r.id).sortAsNumbers();
+		for(let i = 0; i < rulesIds.length; i++)
 		{
-			const rule = rules.at(i);
-			if(isUndefined(rule)) return i;
+			if(rulesIds[i] != i + 1) return i + 1;
 		}
+		return rulesIds.length + 1;
 	}
 	
 	static CallToBrowserAPIMethodReturnException = "Call to one of `browser.declarativeNetRequest` methods return browser internal exception.";
