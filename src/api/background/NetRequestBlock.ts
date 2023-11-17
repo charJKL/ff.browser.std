@@ -20,7 +20,7 @@ export class NetRequestBlock
 {
 	private $redirect: string;
 	private $debug: Debug;
-		
+	
 	public constructor(redirect: string, debug: Debug)
 	{
 		this.$redirect = redirect;
@@ -29,7 +29,7 @@ export class NetRequestBlock
 	
 	public async getRules() : Promise<NetRequestRule[] | BackgroundApiError<"NetRequestBlock">>
 	{
-		return browser.declarativeNetRequest.getDynamicRules().catch(this.catchHandler.bind(this));
+		return browser.declarativeNetRequest.getDynamicRules().catch(this.catchHandler.bind(this, "getDynamicRules"));
 	}
 	
 	public async addRule(rule: NetRequestRulePart) : Promise<NetRequestRule | BackgroundApiError<"NetRequestBlock"> | BackgroundApiError<"RegexpNotSupported">>
@@ -39,7 +39,7 @@ export class NetRequestBlock
 		
 		const isRegexpValid = await this.isRegexpSupported(rule.regexp);
 		if(isError("RegexpNotSupported", isRegexpValid)) return isRegexpValid;
-			
+		
 		// TODO read and check if limits are not reached.
 		
 		const netRequestRule = {} as NetRequestRule;
@@ -55,7 +55,7 @@ export class NetRequestBlock
 					netRequestRule.action.redirect.regexSubstitution = this.$redirect + "#\\0"; // suffix url with orginal target url
 		
 		const packet : NetRequestUpdatePacket = { addRules: [netRequestRule] };
-		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(this.catchHandler.bind(this));
+		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(this.catchHandler.bind(this, "updateDynamicRules"));
 		if(isError("NetRequestBlock",result)) return result;
 		return netRequestRule;
 	}
@@ -71,7 +71,7 @@ export class NetRequestBlock
 		
 		rule.condition.regexFilter = change.regexp;
 		const packet : NetRequestUpdatePacket = { addRules: [rule] };
-		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(this.catchHandler.bind(this));
+		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(this.catchHandler.bind(this, "updateDynamicRules"));
 		if(isError("NetRequestBlock", result)) return result;
 		return rule;
 	}
@@ -84,7 +84,7 @@ export class NetRequestBlock
 		
 		const packet = {} as NetRequestUpdatePacket;
 					packet.removeRuleIds = [rule.id];
-		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(this.catchHandler.bind(this));
+		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(this.catchHandler.bind(this, "updateDynamicRules"));
 		if(isError("NetRequestBlock", result)) return result;
 		return true;
 	}
@@ -127,8 +127,8 @@ export class NetRequestBlock
 	}
 	
 	static CallToBrowserAPIMethodReturnException = "Call to one of `browser.declarativeNetRequest` methods return browser internal exception.";
-	private catchHandler(reason: any) : BackgroundApiError<"NetRequestBlock">
+	private catchHandler(method: string, reason: any) : BackgroundApiError<"NetRequestBlock">
 	{
-		return new BackgroundApiError("NetRequestBlock", NetRequestBlock.CallToBrowserAPIMethodReturnException, {reason}, this.$debug);
+		return new BackgroundApiError("NetRequestBlock", NetRequestBlock.CallToBrowserAPIMethodReturnException, {method, reason}, this.$debug);
 	}
 }

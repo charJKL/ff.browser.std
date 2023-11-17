@@ -23,20 +23,20 @@ export class BrowserStorage<B extends StorageBlueprint>
 	{
 		const entry = { [item]: this.$blueprint[item] };
 		const flatReturnedObject = (obj: StorageBlueprint) : B[I] => obj[item as keyof StorageBlueprint];
-		return this.$storage.get(entry).then(this.decode).then(flatReturnedObject).catch(this.catchHandler.bind(this));
+		return this.$storage.get(entry).then(this.decode).then(flatReturnedObject).catch(this.catchHandler.bind(this, "get"));
 	}
 	
 	public save<I extends StorageItemNames<B>>(item: I, value: B[I]) : Promise<B[I] | BackgroundApiError<"BrowserStorage">>
 	{
 		const entry = { [item]: value }
 		const returnSavedObject = () => value;
-		return this.$storage.set(this.encode(entry)).then(returnSavedObject).catch(this.catchHandler.bind(this));
+		return this.$storage.set(this.encode(entry)).then(returnSavedObject).catch(this.catchHandler.bind(this, "set"));
 	}
 	
 	public remove<I extends StorageItemNames<B>>(item: I): Promise<boolean | BackgroundApiError<"BrowserStorage">>
 	{
 		const returnTrueOnSuccess = () => true;
-		return this.$storage.remove(item as string).then(returnTrueOnSuccess).catch(this.catchHandler.bind(this));
+		return this.$storage.remove(item as string).then(returnTrueOnSuccess).catch(this.catchHandler.bind(this, "remove"));
 	}
 	
 	private encode(value: StorageBlueprint) : StorageBlueprint
@@ -58,9 +58,9 @@ export class BrowserStorage<B extends StorageBlueprint>
 	}
 	
 	static DuringApiCallBrowserThrowInternalError = "During api call browser throw internal error.";
-	private catchHandler(reason: any) : BackgroundApiError<"BrowserStorage">
+	private catchHandler(method: string, reason: any) : BackgroundApiError<"BrowserStorage">
 	{
-		return new BackgroundApiError("BrowserStorage", BrowserStorage.DuringApiCallBrowserThrowInternalError, {reason: reason as string}, this.$debug);
+		return new BackgroundApiError("BrowserStorage", BrowserStorage.DuringApiCallBrowserThrowInternalError, {method, reason}, this.$debug);
 	}
 }
 

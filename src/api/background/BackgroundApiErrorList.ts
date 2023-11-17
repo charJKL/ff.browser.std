@@ -5,11 +5,11 @@ export interface BackgroundApiErrorList
 {
 	"KeyDoesntExist": {map: Map<any, any>, key: any},
 	"MessageListenerIsNotFound": {},
-	"BrowserStorage": {reason: string},
+	"BrowserStorage": {method: string, reason: any },
 	"NoTabsFound": {url: string},
 	"NotificationWasntSuccessful": {tabs: BrowserTab[], results: any[] } // TODO what type `results` has?
 	"BrowserApiProblem": {},
-	"NetRequestBlock": { reason: string },
+	"NetRequestBlock": { method: string, reason: any },
 	"RegexpNotSupported": { regexp: string, reason: string },
 	"RuleDoesntExist": { rules: NetRequestRule[] , ruleId: number }
 }
