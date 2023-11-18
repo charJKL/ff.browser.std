@@ -23,3 +23,5 @@ export { isSuccess } from "./ex/isSuccess";
 export { isUndefined, isNotUndefined } from "./ex/isUndefined";
 export { isNull, isNotNull } from "./ex/isNull";
 export { isArray, isNotArray } from "./ex/isArray";
+
+export { ResolveOverloadArgsException } from "./exceptions/ResolveOverloadArgsException";
