@@ -32,10 +32,10 @@ export class NetRequestBlock
 		return browser.declarativeNetRequest.getDynamicRules().catch(this.catchHandler.bind(this, "getDynamicRules"));
 	}
 	
-	public async addRule(rule: NetRequestRulePart) : Promise<NetRequestRule | BackgroundApiError<"NetRequestBlock"> | BackgroundApiError<"RegexpNotSupported">>
+	public async addRule(rule: NetRequestRulePart) : Promise<NetRequestRule | BackgroundApiError<"NetRequestBlock"> | BackgroundApiError<"RegexpIsNotSupported">>
 	{
 		const isRegexpValid = await this.isRegexpSupported(rule.regexp);
-		if(isError("RegexpNotSupported", isRegexpValid)) return isRegexpValid;
+		if(isError("RegexpIsNotSupported", isRegexpValid)) return isRegexpValid;
 		
 		const uniqueId = await this.getUniqueId();
 		if(isError("NetRequestBlock", uniqueId)) return uniqueId;
@@ -60,14 +60,14 @@ export class NetRequestBlock
 		return netRequestRule;
 	}
 	
-	public async updateRule(change: NetRequestRuleChange) : Promise<NetRequestRule | BackgroundApiError<"NetRequestBlock"> | BackgroundApiError<"RuleDoesntExist"> | BackgroundApiError<"RegexpNotSupported">>
+	public async updateRule(change: NetRequestRuleChange) : Promise<NetRequestRule | BackgroundApiError<"NetRequestBlock"> | BackgroundApiError<"RuleWasNotFound"> | BackgroundApiError<"RegexpIsNotSupported">>
 	{
 		const rule = await this.getRule(change.id);
 		if(isError("NetRequestBlock", rule)) return rule;
-		if(isError("RuleDoesntExist", rule)) return rule;
+		if(isError("RuleWasNotFound", rule)) return rule;
 		
 		const isRegexpValid = await this.isRegexpSupported(change.regexp);
-		if(isError("RegexpNotSupported", isRegexpValid)) return isRegexpValid;
+		if(isError("RegexpIsNotSupported", isRegexpValid)) return isRegexpValid;
 		
 		rule.condition.regexFilter = change.regexp;
 		const packet : NetRequestUpdatePacket = { addRules: [rule] };
@@ -76,11 +76,11 @@ export class NetRequestBlock
 		return rule;
 	}
 
-	public async deleteRule(ruleId: NetRequestRuleId) : Promise<boolean | BackgroundApiError<"NetRequestBlock"> | BackgroundApiError<"RuleDoesntExist">>
+	public async deleteRule(ruleId: NetRequestRuleId) : Promise<boolean | BackgroundApiError<"NetRequestBlock"> | BackgroundApiError<"RuleWasNotFound">>
 	{
 		const rule = await this.getRule(ruleId.id);
 		if(isError("NetRequestBlock", rule)) return rule;
-		if(isError("RuleDoesntExist", rule)) return rule;
+		if(isError("RuleWasNotFound", rule)) return rule;
 		
 		const packet = {} as NetRequestUpdatePacket;
 					packet.removeRuleIds = [rule.id];
@@ -90,7 +90,7 @@ export class NetRequestBlock
 	}
 	
 	static RegexpValueForBlockingRuleIsNotSupported = "Provided regexp for blocking rule is not supported, it will not work.";
-	public async isRegexpSupported(regexp: string) : Promise<boolean | BackgroundApiError<"RegexpNotSupported">>
+	public async isRegexpSupported(regexp: string) : Promise<boolean | BackgroundApiError<"RegexpIsNotSupported">>
 	{
 		const isNotSupported = (value: RegexpSupportedResult) : value is Required<RegexpSupportedResult> => value.isSupported === false;
 		const regexpArgs = {} as NetRequestRegexpArgs;
@@ -99,18 +99,18 @@ export class NetRequestBlock
 					regexpArgs.requireCapturing = true;
 
 		const isRegexSupportedResult = await browser.declarativeNetRequest.isRegexSupported(regexpArgs);
-		if(isNotSupported(isRegexSupportedResult)) return new BackgroundApiError("RegexpNotSupported", NetRequestBlock.RegexpValueForBlockingRuleIsNotSupported, {regexp, reason: isRegexSupportedResult.reason}, this.$debug);
+		if(isNotSupported(isRegexSupportedResult)) return new BackgroundApiError("RegexpIsNotSupported", NetRequestBlock.RegexpValueForBlockingRuleIsNotSupported, {regexp, reason: isRegexSupportedResult.reason}, this.$debug);
 		return isRegexSupportedResult.isSupported;
 	}
 	
 	static RuleWithWantedIdDoesntExist = "NetRequestBlockRule with wanted id doesn't exist.";
-	private async getRule(ruleId: number) : Promise<NetRequestRule | BackgroundApiError<"NetRequestBlock"> | BackgroundApiError<"RuleDoesntExist">>
+	private async getRule(id: number) : Promise<NetRequestRule | BackgroundApiError<"NetRequestBlock"> | BackgroundApiError<"RuleWasNotFound">>
 	{
 		const rules = await this.getRules();
 		if(isError("NetRequestBlock", rules)) return rules;
 		
-		const rule = rules.find((rule) => rule.id == ruleId);
-		if(isUndefined(rule)) return new BackgroundApiError("RuleDoesntExist", NetRequestBlock.RuleWithWantedIdDoesntExist, {rules, ruleId}, this.$debug)
+		const rule = rules.find((rule) => rule.id == id);
+		if(isUndefined(rule)) return new BackgroundApiError("RuleWasNotFound", NetRequestBlock.RuleWithWantedIdDoesntExist, {id, rules}, this.$debug)
 		return rule;
 	}
 	
