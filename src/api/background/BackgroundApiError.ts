@@ -11,6 +11,6 @@ export class BackgroundApiError<V extends BackgroundApiErrorVariant> extends Typ
 	
 	constructor(variant: V, message: string, info: BackgroundApiErrorInfo[V], debug: Debug)
 	{
-		super(variant, message, info, debug);
+		super(variant, message, info, null, debug);
 	}
 }

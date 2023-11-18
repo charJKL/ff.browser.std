@@ -6,17 +6,19 @@ export type TypedErrorInfo = any;
 export class TypedError<V extends TypedErrorVariant, I extends TypedErrorInfo> extends Error
 {
 	public static Any = Symbol("AnyPossibleError");
-	private $debug?: Debug;
 	private $variant : V;
 	private $info : I;
+	private $parent: TypedError<any, any> | null
+	private $debug?: Debug;
 	
-	constructor(variant: V, message: string, info: I, debug?: Debug)
+	constructor(variant: V, message: string, info: I, parent: TypedError<any, any> | null, debug?: Debug)
 	{
 		super(message);
 		this.$debug = debug;
 		this.$variant = variant;
 		this.$info = info;
-		this.$debug?.log(`${new.target.name}, variant=$0, message=$1, info=$2`, Debug.Error, variant, message, info);
+		this.$parent = parent;
+		this.$debug?.log(`${new.target.name}, variant=$0, message=$1, info=$2, parent=$3`, Debug.Error, variant, message, info, parent);
 	}
 	
 	public get variant() : V
@@ -28,4 +30,10 @@ export class TypedError<V extends TypedErrorVariant, I extends TypedErrorInfo> e
 	{
 		return this.$info;
 	}
+	
+	public get debug(): Debug | undefined
+	{
+		return this.$debug
+	}
+	
 }
