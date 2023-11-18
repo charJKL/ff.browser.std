@@ -70,7 +70,7 @@ export class NetRequestBlock
 		if(isError("RegexpIsNotSupported", isRegexpValid)) return isRegexpValid;
 		
 		rule.condition.regexFilter = change.regexp;
-		const packet : NetRequestUpdatePacket = { addRules: [rule] };
+		const packet : NetRequestUpdatePacket = { removeRuleIds: [rule.id], addRules: [rule] };
 		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(this.catchHandler.bind(this, "updateDynamicRules"));
 		if(isError("NetRequestBlock", result)) return result;
 		return rule;
