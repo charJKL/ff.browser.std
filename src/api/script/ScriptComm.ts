@@ -45,7 +45,7 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 	
 	public removeNotificationListener<V extends keyof SN>(variant: V, listener: SN[V])
 	{
-		this.$listeners.delete(variant);
+		this.$listeners.delete(variant, listener);
 	}
 
 	private async dispatchNotification(packet: MessagePacket, sender: MessageSender, sendResponse: SendResponse) 
