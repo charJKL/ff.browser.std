@@ -36,9 +36,10 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 		{
 			if(isUndefined(tab.id)) return;
 			const packet = Message.prepare(variant, args);
-			return await browser.tabs.sendMessage(tab.id, packet);
+			const result = await browser.tabs.sendMessage(tab.id, packet);
+			return result;
 		});
-		const wasErrorOccuredDuringSending = () => true; // TODO how to resolve if `browser.tabs.sendMessage` was not sucessful?
+		const wasErrorOccuredDuringSending = (v: any) => v instanceof Error;
 		if(results.find(wasErrorOccuredDuringSending)) return new BackgroundApiError("NotificationSendWasntSuccessful", BackgroundComm.NotificationWasntSendSucessfulToAllTabs, {tabs: tabs, results: results}, this.$debug)
 		return true;
 	}
