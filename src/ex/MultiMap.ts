@@ -12,9 +12,12 @@ export class MultiMap<K, V>
 		return this.$map.has(key);
 	}
 	
-	public delete(key: K) : this
+	public delete(key: K, value: V) : this
 	{
-		this.$map.delete(key);
+		const values = this.$map.get(key) ?? [];
+		const index = values.indexOf(value);
+		if(index >= 0) values.splice(index, 1);
+		if(values.length == 0) this.$map.delete(key);
 		return this;
 	}
 	
