@@ -16,6 +16,7 @@ export { isFailure } from "./api/isFailure";
 export { ScriptCommReact } from "./react/ScriptCommReact";
 export { wasRaised, isWaiting } from "./react/ScriptCommReact";
 
+export { Watcher } from "./ex/Watcher";
 export { Debug } from "./ex/Debug";
 export { TypedError} from "./ex/TypedError";
 export { isError } from "./ex/isError";
