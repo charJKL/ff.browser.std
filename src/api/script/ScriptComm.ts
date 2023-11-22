@@ -1,8 +1,8 @@
 import { Message, MessagePacket, MessagePacketResponse, MessageSender, NotificationListener, MessageListenerArgs, CanOmitArgs, SupportedMessages, SupportedNotifications} from "../Message";
 import { ResolveOverloadArgsException } from "../../exceptions/ResolveOverloadArgsException";
-import { Debug } from "../../ex/Debug";
-import { isUndefined } from "../../ex/isUndefined";
-import { MultiMap } from "../../ex/MultiMap";
+import { Debug } from "../../classes/Debug";
+import { MultiMap } from "../../classes/MultiMap";
+import { isUndefined } from "../../functions/isUndefined";
 
 type SendResponse = (response?: {}) => void;
 export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifications>

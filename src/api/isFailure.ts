@@ -1,4 +1,4 @@
-import { TypedError } from "../ex/TypedError";
+import { TypedError } from "../classes/TypedError";
 import { MessageFailure, MessageFailureVariant } from "./MessageFailure";
 
 export function isFailure<V1 extends symbol, V2 extends Exclude<MessageFailureVariant, V2>, R>(variant: symbol, failure: R | TypedError<V2, any>): failure is TypedError<V2, any>;

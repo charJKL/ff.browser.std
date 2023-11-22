@@ -16,14 +16,15 @@ export { isFailure } from "./api/isFailure";
 export { ScriptCommReact } from "./react/ScriptCommReact";
 export { wasRaised, isWaiting } from "./react/ScriptCommReact";
 
-export { Watcher } from "./ex/Watcher";
-export { Debug } from "./ex/Debug";
-export { TypedError} from "./ex/TypedError";
-export { isError } from "./ex/isError";
-export { isSuccess } from "./ex/isSuccess";
-export { isTrue, isFalse } from "./ex/isBoolean";
-export { isUndefined, isNotUndefined } from "./ex/isUndefined";
-export { isNull, isNotNull } from "./ex/isNull";
-export { isArray, isNotArray } from "./ex/isArray";
+export { Watcher } from "./classes/Watcher";
+export { Debug } from "./classes/Debug";
+export { TypedError} from "./classes/TypedError";
+
+export { isError } from "./functions/isError";
+export { isSuccess } from "./functions/isSuccess";
+export { isTrue, isFalse } from "./functions/isBoolean";
+export { isUndefined, isNotUndefined } from "./functions/isUndefined";
+export { isNull, isNotNull } from "./functions/isNull";
+export { isArray, isNotArray } from "./functions/isArray";
 
 export { ResolveOverloadArgsException } from "./exceptions/ResolveOverloadArgsException";

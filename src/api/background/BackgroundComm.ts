@@ -1,8 +1,8 @@
 import { Message, SupportedMessages, SupportedNotifications, MessageListener, MessageListenerArgs, MessageSender, MessagePacket } from "../Message";
 import { MessageFailure } from "../MessageFailure";
 import { BackgroundApiError } from "./BackgroundApiError";
-import { Debug } from "../../ex/Debug";
-import { isUndefined } from "../../ex/isUndefined";
+import { Debug } from "../../classes/Debug";
+import { isUndefined } from "../../functions/isUndefined";
 
 type BrowserTab = browser.tabs.Tab;
 type SendResponse = (response?: {}) => void;

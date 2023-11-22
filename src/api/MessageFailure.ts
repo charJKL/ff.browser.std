@@ -1,4 +1,4 @@
-import { TypedError } from "../ex/TypedError";
+import { TypedError } from "../classes/TypedError";
 
 export type MessageFailureVariant = string;
 export type MessageFailureInfo = any;
