@@ -1,8 +1,13 @@
 import { Message, MessagePacket, MessagePacketResponse, MessageSender, NotificationListener, MessageListenerArgs, CanOmitArgs, SupportedMessages, SupportedNotifications} from "../Message";
 import { ResolveOverloadArgsException } from "../../exceptions/ResolveOverloadArgsException";
 import { Debug } from "../../classes/Debug";
-import { MultiMap } from "../../classes/MultiMap";
 import { isUndefined } from "../../functions/isUndefined";
+import { MultiMap } from "../../classes/MultiMap";
+import { MessageError } from "../MessageError";
+
+// We dont use building `ResolveType` because then type hiting provided by IDE will be ugly.
+// Intellisense resolve type to certain level not deeper.
+export type ResolveReturn<T> = T extends (...any: any) => infer R ? R | MessageError<"FatalResponse"> : any; 
 
 type SendResponse = (response?: {}) => void;
 export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifications>
@@ -17,8 +22,8 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 		this.$listeners = new MultiMap();
 	}
 	
-	public async sendMessage<V extends keyof SM>(variant: CanOmitArgs<SM,V>) : Promise<ReturnType<SM[V]>>;
-	public async sendMessage<V extends keyof SM>(variant: V, args: MessageListenerArgs<SM[V]>) : Promise<ReturnType<SM[V]>>;
+	public async sendMessage<V extends keyof SM>(variant: CanOmitArgs<SM,V>) : Promise<ResolveReturn<SM[V]>>;
+	public async sendMessage<V extends keyof SM>(variant: V, args: MessageListenerArgs<SM[V]>) : Promise<ResolveReturn<SM[V]>>;
 	public async sendMessage<V extends keyof SM>(arg0: any, arg1?: any) : Promise<any>
 	{
 		function resolveArgs(iArgs: IArguments, arg0: any, arg1: any) : [V, MessageListenerArgs<SM[V]>]

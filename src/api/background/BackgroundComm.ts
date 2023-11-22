@@ -1,8 +1,9 @@
 import { Message, SupportedMessages, SupportedNotifications, MessageListener, MessageListenerArgs, MessageSender, MessagePacket } from "../Message";
-import { MessageFailure } from "../MessageFailure";
 import { BackgroundApiError } from "./BackgroundApiError";
 import { Debug } from "../../classes/Debug";
 import { isUndefined } from "../../functions/isUndefined";
+import { MessageError } from "../MessageError";
+import { MissingListenerException } from "../../exceptions/MissingListenerException";
 
 type BrowserTab = browser.tabs.Tab;
 type SendResponse = (response?: {}) => void;
@@ -46,16 +47,25 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 	
 	public async dispatchMessage(packet: MessagePacket, sender: MessageSender, sendResponse: SendResponse)
 	{
-		this.$debug?.log("BackgroundComm.dispatchRequest(), packet=$0", Debug.BackgroundMessage, packet);
-		const listener = this.$listeners.get(packet.variant) ?? this.defaultErrorListener; // TODO what to do when listener for this event is not set?
-		const result = await listener({sender, ...packet.data});
-		const response = Message.pack(result);
-		return Promise.resolve(response);
+		try
+		{
+			this.$debug?.log("BackgroundComm.dispatchRequest(), packet=$0", Debug.BackgroundMessage, packet);
+			const listener = this.$listeners.get(packet.variant) ?? this.defaultErrorListener.bind(this, packet);
+			const result = await listener({sender, ...packet.data});
+			const response = Message.pack(result);
+			return Promise.resolve(response);
+		}
+		catch(e)
+		{
+			this.$debug?.log("BackgroundComm.dispatchRequest(), exceptionOccur=$0", Debug.Fatal, e);
+			const result = new MessageError("FatalResponse", "Fatal error occur during response.", {}, this.$debug);
+			const response = Message.pack(result);
+			return Promise.resolve(response);
+		}
 	}
 	
-	static ThereIsNoListenerForThisMessage = "There is no listener for this message.";
-	private async defaultErrorListener() : Promise<MessageFailure<"MissingListener", {}>>
+	private defaultErrorListener(packet: MessagePacket) : void
 	{
-		return new MessageFailure("MissingListener", BackgroundComm.ThereIsNoListenerForThisMessage, {});
+		throw new MissingListenerException(`There is missing listener for ${packet.variant}.`);
 	}
 }

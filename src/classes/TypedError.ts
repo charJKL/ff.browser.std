@@ -18,7 +18,7 @@ export class TypedError<V extends TypedErrorVariant, I extends TypedErrorInfo> e
 		this.$variant = variant;
 		this.$info = info;
 		this.$parent = parent;
-		this.$debug?.log(`${new.target.name}, variant=$0, message=$1, info=$2, parent=$3`, Debug.Error, variant, message, info, parent);
+		this.$debug?.log(`${this.constructor.name}, variant=$0, message=$1, info=$2, parent=$3`, Debug.Error, this.variant, this.message, this.info, this.$parent);
 	}
 	
 	public get variant() : V
@@ -35,5 +35,4 @@ export class TypedError<V extends TypedErrorVariant, I extends TypedErrorInfo> e
 	{
 		return this.$debug
 	}
-	
 }

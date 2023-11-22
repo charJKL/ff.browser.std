@@ -6,6 +6,7 @@ export class Debug
 {
 	public static None = Symbol("Debug.Format.None");
 	public static Error = Symbol("Debug.Format.Error");
+	public static Fatal = Symbol("Debug.Format.Fatal");
 	public static ScriptMessage = Symbol("Debug.Format.ScriptMessage");
 	public static ScriptNotification = Symbol("Debug.Format.ScriptNotification");
 	public static BackgroundMessage = Symbol("Debug.Format.BackgroundNotification");
@@ -15,6 +16,7 @@ export class Debug
 	{
 		[Debug.None]: "",
 		[Debug.Error]: "background: rgba(205, 97, 85, 1);", // red
+		[Debug.Fatal]: "background: rgba(0, 0, 0, 1);color: rgba(255,255,255,1);", // black
 		[Debug.ScriptMessage]: "background: rgba(125, 206, 160, 1);", // green
 		[Debug.ScriptNotification]: "background: rgba(247, 220, 111, 1);", // yellow
 		[Debug.BackgroundMessage]: "background: rgba(127, 179, 213, 1);", // blue
@@ -102,6 +104,6 @@ export class Debug
 	private transformErrorType(argument: any) : any
 	{
 		if((argument instanceof Error) == false) return argument;
-		return JSON.parse(JSON.stringify(argument));
+		return JSON.parse(JSON.stringify(argument)); // TODO if we JSON.stringify clear Error object all information is lost, iterate over internal values somehow.
 	}
 }

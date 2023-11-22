@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { ScriptComm } from "../api/script/ScriptComm";
+import { ScriptComm, ResolveReturn } from "../api/script/ScriptComm";
 import { SupportedMessages, SupportedNotifications, CanOmitArgs, MessageListenerArgs, ObjectAlike } from "../api/Message";
 
-export type BackgroundState<T> = [T | Waiting, (state: T) => void];
+export type BackgroundState<T> = [Waiting | T, (state: T) => void];
 export type Notification<T> = { wasRaised: boolean } & Partial<T>;
 
 export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedNotifications>
@@ -14,16 +14,16 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 		this.$scriptComm = scriptComm;
 	}
 	
-	public useBackgroundState<V extends keyof SM>(variant: CanOmitArgs<SM, V>) : BackgroundState<ReturnType<SM[V]>>;
-	public useBackgroundState<V extends keyof SM>(variant: V, args: MessageListenerArgs<SM[V]>) : BackgroundState<ReturnType<SM[V]>>;
-	public useBackgroundState<V extends keyof SM>(variant: V, args?: MessageListenerArgs<SM[V]>) : BackgroundState<ReturnType<SM[V]>>
+	public useBackgroundState<V extends keyof SM>(variant: CanOmitArgs<SM, V>) : BackgroundState<ResolveReturn<SM[V]>>;
+	public useBackgroundState<V extends keyof SM>(variant: V, args: MessageListenerArgs<SM[V]>) : BackgroundState<ResolveReturn<SM[V]>>;
+	public useBackgroundState<V extends keyof SM>(variant: V, args?: MessageListenerArgs<SM[V]>) : BackgroundState<ResolveReturn<SM[V]>>
 	{
-		const [data, setData] = useState<ReturnType<SM[V]> | Waiting>(new Waiting());
+		const [data, setData] = useState<ResolveReturn<SM[V]> | Waiting>(new Waiting());
 		
 		useEffect(() => {
 			let ignore = false;
 			this.$scriptComm.sendMessage(variant, args).then(thenHandler).catch(catchHandler)
-			function thenHandler(data: ReturnType<SM[V]>)
+			function thenHandler(data: ResolveReturn<SM[V]>)
 			{
 				if(ignore == true) return;
 				setData(data)
@@ -58,9 +58,9 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 		return notification;
 	}
 	
-	public async sendMessage<V extends keyof SM>(variant: CanOmitArgs<SM, V>) :Promise<ReturnType<SM[V]>>;
-	public async sendMessage<V extends keyof SM>(variant: V, args: MessageListenerArgs<SM[V]>) : Promise<ReturnType<SM[V]>>;
-	public async sendMessage<V extends keyof SM>(variant: V, args?: MessageListenerArgs<SM[V]>) : Promise<ReturnType<SM[V]>>
+	public async sendMessage<V extends keyof SM>(variant: CanOmitArgs<SM, V>) :Promise<ResolveReturn<SM[V]>>;
+	public async sendMessage<V extends keyof SM>(variant: V, args: MessageListenerArgs<SM[V]>) : Promise<ResolveReturn<SM[V]>>;
+	public async sendMessage<V extends keyof SM>(variant: V, args?: MessageListenerArgs<SM[V]>) : Promise<ResolveReturn<SM[V]>>
 	{
 		return await this.$scriptComm.sendMessage(variant, args);
 	}
