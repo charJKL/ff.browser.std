@@ -1,6 +1,6 @@
 export class MultiMap<K, V>
 {
-	public $map : Map<K, V[]>;
+	public $map : Map<K, Array<V>>;
 	
 	public constructor()
 	{
@@ -29,8 +29,8 @@ export class MultiMap<K, V>
 		return this;
 	}
 	
-	public get(key: K) : V[] | undefined
+	public get(key: K) : Array<V>
 	{
-		return this.$map.get(key);
+		return this.$map.get(key) ?? [];
 	}
 }
