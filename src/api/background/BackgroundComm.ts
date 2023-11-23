@@ -45,7 +45,7 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 		return true;
 	}
 	
-	public async dispatchMessage(packet: MessagePacket, sender: MessageSender, sendResponse: SendResponse)
+	private async dispatchMessage(packet: MessagePacket, sender: MessageSender, sendResponse: SendResponse)
 	{
 		try
 		{
