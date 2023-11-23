@@ -50,14 +50,6 @@ export class Debug
 		console.clear();
 	}
 	
-	public terminate(...data: any[]) : string // TODO does this function is important and needed?
-	{
-		//PeriodicallyContext.ClearAllActiveContexts(); // 
-		console.error(...data);
-		debugger;
-		return `ApplicationLogicError`;
-	}
-	
 	private differentiateArgs(arg0: string, args: any[]) : {message: string, format: string, vars: string, values: any[]}
 	{
 		function resolveArgs(iArgs: IArguments, arg0: any, args: any[]) : [string, keyof typeof Debug.Formats, any[]]
