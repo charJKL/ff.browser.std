@@ -97,13 +97,17 @@ export class Debug
 		}
 	}
 	
-	// Default console.log() output for `Error` class is annoying,
-	// so we get rid of any kind relation to `Error`. This way
-	// we loose some information but it's okey, better this than
-	// default useless debug output.
+	// Default console.log() output for `Error` class is annoying, because it print callstack hence 
+	// cluttering console, so we get rid of any kind relation to `Error`. Transform `Error` to 
+	// default `Object` type.
 	private transformErrorType(argument: any) : any
 	{
 		if((argument instanceof Error) == false) return argument;
-		return JSON.parse(JSON.stringify(argument)); // TODO if we JSON.stringify clear Error object all information is lost, iterate over internal values somehow.
+		
+		const err : any = {};
+					err.name = argument.constructor.name;
+		const keys = Object.getOwnPropertyNames(argument);
+					keys.forEach((key) => err[key] = argument[key]);
+		return err;
 	}
 }

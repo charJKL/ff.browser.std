@@ -57,7 +57,7 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 		}
 		catch(e)
 		{
-			this.$debug?.log("BackgroundComm.dispatchRequest(), exceptionOccur=$0", Debug.Fatal, e);
+			this.$debug?.log("Background script exception $0", Debug.Fatal, e);
 			const result = new MessageError("FatalResponse", "Fatal error occur during response.", {}, this.$debug);
 			const response = Message.pack(result);
 			return Promise.resolve(response);
