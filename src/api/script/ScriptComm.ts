@@ -36,7 +36,7 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 		
 		this.$debug?.logFunction("ScriptComm.sendMessage(), variant=$0, args=$1", Debug.ScriptMessage, variant, args);
 		const packet = Message.prepare(variant, args);
-		const response = await browser.runtime.sendMessage(packet) as MessagePacketResponse; 
+		const response = await browser.runtime.sendMessage(packet) as MessagePacketResponse; // TODO what if sendMessage throw browser internal exception? is that event possible if I don't fuck up?
 		const result = Message.unpack(response);
 		this.$debug?.log("ScriptComm.sendMessage(), response=$0, result=$1", response, result);
 		this.$debug?.endFunction();

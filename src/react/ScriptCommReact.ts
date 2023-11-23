@@ -30,7 +30,7 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 			}
 			function catchHandler()
 			{
-				// TODO what to do here?
+				// const messageError = new MessageError("FatalResponse", "", {}, this.$debug) // TODO can't return `MessageError` because it's not background error, it's frontend. Also for the same reason I don't have access to this.$debug.
 			}
 			return () => { ignore = true; }
 		}, [variant]);
