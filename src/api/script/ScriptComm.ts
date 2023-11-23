@@ -1,5 +1,5 @@
 import { Message, MessagePacket, MessagePacketResponse, MessageSender, MessageListenerArgs, CanOmitArgs, SupportedMessages, SupportedNotifications} from "../Message";
-import { NotificationBlueprint, NotificationListener, NotificationFilter, CanOmitFilter } from "../Message";
+import { ObjectAlike, NotificationBlueprint, NotificationListener, NotificationFilter, CanOmitFilter } from "../Message";
 import { ResolveOverloadArgsException } from "../../exceptions/ResolveOverloadArgsException";
 import { Debug } from "../../classes/Debug";
 import { isUndefined } from "../../functions/isUndefined";
@@ -14,7 +14,7 @@ type SendResponse = (response?: {}) => void;
 export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
 	private $debug: undefined | Debug;
-	private $listeners: MultiMap<keyof SN, NotificationListener<any>>;
+	private $listeners: MultiMap<keyof SN, {filter: ObjectAlike, listener: NotificationListener<any>}>;
 	
 	public constructor(debug?: Debug)
 	{
@@ -55,12 +55,12 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 			throw new ResolveOverloadArgsException("ScriptComm.addNotificationListener()");
 		}
 		const [variant, filter, listener] = resolveArgs(arguments, arg0, arg1, arg2); // TODO implement filtering
-		this.$listeners.set(variant, listener);
+		this.$listeners.set(variant, {filter, listener});
 	}
 	
 	public removeNotificationListener<V extends keyof SN>(variant: V, listener: NotificationListener<SN[V]>)
 	{
-		this.$listeners.delete(variant, listener);
+		this.$listeners.delete(variant, {filter: {}, listener}); // TODO this delete will not work becouse each time I create new object
 	}
 
 	private async dispatchNotification(packet: MessagePacket, sender: MessageSender, sendResponse: SendResponse) 
@@ -68,9 +68,15 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 		this.$debug?.logFunction("ScriptComm.dispatchNotification(), packet.variant=$0, packet.data=$1", Debug.ScriptNotification, packet.variant, packet.data);
 		const listeners = this.$listeners.get(packet.variant);
 		this.$debug?.log("ScriptComm.dispatchNotification(), variant=$0, count=$1, listeners=$2", packet.variant, listeners?.length, listeners);
-		if(isUndefined(listeners)) return;
-		listeners.forEach(async l => await l(packet.data)); // TODO okey, but how to filter notification for specific rule, e.g.: id=23
+		listeners.forEach(({filter, listener}) => this.dispatchNotificationFilter.call(this, filter, listener, packet.data));
 		this.$debug?.endFunction();
+	}
+	
+	private async dispatchNotificationFilter(filter: any, listener:any, data: any)
+	{
+		console.log("dispatchNotificationFilter", filter, listener, data);
+		const doesPassFilter = () => true; // TODO implement this;
+		if(doesPassFilter()) await listener(data);
 	}
 }
 
