@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ScriptComm, ResolveReturn } from "../api/script/ScriptComm";
-import { SupportedMessages, SupportedNotifications, CanOmitArgs, MessageListenerArgs, ObjectAlike } from "../api/Message";
+import { SupportedMessages, CanOmitArgs, MessageListenerArgs, ObjectAlike } from "../api/Message";
+import { SupportedNotifications, NotificationData } from "../api/Message";
 
 export type BackgroundState<T> = [Waiting | T, (state: T) => void];
 export type Notification<T> = { wasRaised: boolean } & Partial<T>;
@@ -38,9 +39,9 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 		return [data, setData];
 	}
 	
-	public useNotification<V extends keyof SN>(variant: V) : Notification<MessageListenerArgs<SN[V]>>
+	public useNotification<V extends keyof SN>(variant: V) : Notification<NotificationData<SN[V]>> // TODO support filtering here.
 	{
-		const [data, setData] = useState<MessageListenerArgs<SN[V]>>({});
+		const [data, setData] = useState<NotificationData<SN[V]>>(0 as any);
 		const wasRaised = useRef(false);
 		
 		useEffect(() => {

@@ -1,4 +1,4 @@
-import { Message, SupportedMessages, SupportedNotifications, MessageListener, MessageListenerArgs, MessageSender, MessagePacket } from "../Message";
+import { Message, SupportedMessages, SupportedNotifications, MessageListener, MessageListenerArgs, NotificationData, MessageSender, MessagePacket } from "../Message";
 import { BackgroundApiError } from "./BackgroundApiError";
 import { Debug } from "../../classes/Debug";
 import { isUndefined } from "../../functions/isUndefined";
@@ -28,7 +28,7 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 	
 	static WantedUrlIsntOnpenedOnAnyTab = "Wanted url isn't opened on any tab.";
 	static NotificationWasntSendSucessfulToAllTabs = "Notification wasnt send sucessfule to all tabs.";
-	public async sendNotification<V extends keyof SN>(tabUrl: string, variant: V, args: MessageListenerArgs<SN[V]>) : Promise<boolean | BackgroundApiError<"NoTabsWasFound"> | BackgroundApiError<"NotificationSendWasntSuccessful">>
+	public async sendNotification<V extends keyof SN>(tabUrl: string, variant: V, args: NotificationData<SN[V]>) : Promise<boolean | BackgroundApiError<"NoTabsWasFound"> | BackgroundApiError<"NotificationSendWasntSuccessful">>
 	{
 		this.$debug?.log("BackgroundComm.sendNotification(), tabUrl=$0, variant=$1, args=$2", Debug.BackgroundNotification, tabUrl, variant, args);
 		const tabs = await browser.tabs.query({url: tabUrl}); // TODO should BackgroundComm use directly `browser.tabs`? or had inject `BrowserTabs`?

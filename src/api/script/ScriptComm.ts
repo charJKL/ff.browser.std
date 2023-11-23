@@ -1,11 +1,12 @@
-import { Message, MessagePacket, MessagePacketResponse, MessageSender, NotificationListener, MessageListenerArgs, CanOmitArgs, SupportedMessages, SupportedNotifications} from "../Message";
+import { Message, MessagePacket, MessagePacketResponse, MessageSender, MessageListenerArgs, CanOmitArgs, SupportedMessages, SupportedNotifications} from "../Message";
+import { NotificationBlueprint, NotificationListener, NotificationFilter, CanOmitFilter } from "../Message";
 import { ResolveOverloadArgsException } from "../../exceptions/ResolveOverloadArgsException";
 import { Debug } from "../../classes/Debug";
 import { isUndefined } from "../../functions/isUndefined";
 import { MultiMap } from "../../classes/MultiMap";
 import { MessageError } from "../MessageError";
 
-// We dont use building `ResolveType` because then type hiting provided by IDE will be ugly.
+// We dont use buildin `ResolveType` because then type hiting provided by IDE will be ugly.
 // Intellisense resolve type to certain level not deeper.
 export type ResolveReturn<T> = T extends (...any: any) => infer R ? R | MessageError<"FatalResponse"> : any; 
 
@@ -13,7 +14,7 @@ type SendResponse = (response?: {}) => void;
 export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
 	private $debug: undefined | Debug;
-	private $listeners: MultiMap<keyof SN, NotificationListener>;
+	private $listeners: MultiMap<keyof SN, NotificationListener<any>>;
 	
 	public constructor(debug?: Debug)
 	{
@@ -30,7 +31,7 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 		{
 			if(iArgs.length == 1) return [arg0 as V, {} as MessageListenerArgs<SM[V]>];
 			if(iArgs.length == 2) return [arg0 as V, arg1 as MessageListenerArgs<SM[V]>];
-			throw new ResolveOverloadArgsException("ScriptComm::sendMessage()");
+			throw new ResolveOverloadArgsException("ScriptComm.sendMessage()");
 		}
 		const [variant, args] = resolveArgs(arguments, arg0, arg1);
 		
@@ -43,12 +44,21 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 		return result;
 	}
 
-	public addNotificationListener<V extends keyof SN>(variant: V, listener: SN[V])
+	public addNotificationListener<V extends keyof SN>(variant: CanOmitFilter<SN, V>, listener: NotificationListener<SN[V]>) : void
+	public addNotificationListener<V extends keyof SN>(variant: V, filter: NotificationFilter<SN[V]>, listener: NotificationListener<SN[V]>) : void
+	public addNotificationListener<V extends keyof SN>(arg0: any, arg1: any, arg2?: any) : void
 	{
+		function resolveArgs(iArgs: IArguments, arg0: any, arg1: any, arg2: any) : [V, NotificationFilter<SN[V]>, NotificationListener<SN[V]>]
+		{
+			if(iArgs.length == 2) return [arg0, {} as NotificationFilter<SN[V]>, arg1];
+			if(iArgs.length == 3) return [arg0, arg1, arg2];
+			throw new ResolveOverloadArgsException("ScriptComm.addNotificationListener()");
+		}
+		const [variant, filter, listener] = resolveArgs(arguments, arg0, arg1, arg2); // TODO implement filtering
 		this.$listeners.set(variant, listener);
 	}
 	
-	public removeNotificationListener<V extends keyof SN>(variant: V, listener: SN[V])
+	public removeNotificationListener<V extends keyof SN>(variant: V, listener: NotificationListener<SN[V]>)
 	{
 		this.$listeners.delete(variant, listener);
 	}

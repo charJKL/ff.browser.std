@@ -6,13 +6,19 @@ export type ObjectAlike = any; // must be any because https://stackoverflow.com/
 export type MessageSender = browser.runtime.MessageSender;
 export type MessageVariant = string;
 export type MessageListener = (args: ObjectAlike) => any;
-export type NotificationVariant = string;
-export type NotificationListener = (args: ObjectAlike) => void;
+
 export type MessageListenerArgs<L extends Func> = Parameters<L>[0];
 export type CanOmitArgs<SM extends SupportedMessages, VM extends keyof SM> = {} extends MessageListenerArgs<SM[VM]> ? VM : never;
 
+export type NotificationVariant = string;
+export type NotificationBlueprint = (filter?: ObjectAlike) => ObjectAlike;
+export type NotificationFilter<B extends NotificationBlueprint> = undefined extends Parameters<B>[0] ? never : Parameters<B>[0];
+export type NotificationData<B extends NotificationBlueprint> = ReturnType<B>;
+export type NotificationListener<B extends NotificationBlueprint> = (data: NotificationData<B>) => void;
+export type CanOmitFilter<SN extends SupportedNotifications, V extends keyof SN> = undefined extends Parameters<SN[V]>[0] ? V : never;
+
 export type SupportedMessages = { [variant: MessageVariant]: MessageListener };
-export type SupportedNotifications = { [variant: NotificationVariant]: NotificationListener };
+export type SupportedNotifications = { [variant: NotificationVariant]: NotificationBlueprint };
 
 export type MessagePacket = { variant: MessageVariant, data: ObjectAlike }
 export type MessagePacketResponse = { status: "Success" | "Failure", data: any };
