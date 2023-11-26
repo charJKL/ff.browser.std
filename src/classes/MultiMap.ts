@@ -1,3 +1,9 @@
+
+export interface IComparable<T>
+{
+	isEqual(this: T, obj: T) : boolean;
+}
+
 export class MultiMap<K, V>
 {
 	public $map : Map<K, Array<V>>;
@@ -14,8 +20,9 @@ export class MultiMap<K, V>
 	
 	public delete(key: K, value: V) : this
 	{
+		const isComparable = (value: any) : value is IComparable<V> => typeof value.isEqual !== "undefined";
 		const values = this.$map.get(key) ?? [];
-		const index = values.indexOf(value);
+		const index = isComparable(value) ? values.findIndex((v) => value.isEqual(v)) : values.indexOf(value);
 		if(index >= 0) values.splice(index, 1);
 		if(values.length == 0) this.$map.delete(key);
 		return this;
