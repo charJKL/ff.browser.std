@@ -2,19 +2,17 @@ import { Message, MessagePacket, MessagePacketResponse, MessageSender, MessageLi
 import { ObjectAlike, NotificationBlueprint, NotificationListener, NotificationFilter, CanOmitFilter } from "../Message";
 import { ResolveOverloadArgsException } from "../../exceptions/ResolveOverloadArgsException";
 import { Debug } from "../../classes/Debug";
-import { isUndefined } from "../../functions/isUndefined";
-import { MultiMap } from "../../classes/MultiMap";
+import { MultiMap, IComparable } from "../../classes/MultiMap";
 import { MessageError } from "../MessageError";
 
 // We dont use buildin `ResolveType` because then type hiting provided by IDE will be ugly.
 // Intellisense resolve type to certain level not deeper.
 export type ResolveReturn<T> = T extends (...any: any) => infer R ? R | MessageError<"FatalResponse"> : any; 
-
 type SendResponse = (response?: {}) => void;
 export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
 	private $debug: undefined | Debug;
-	private $listeners: MultiMap<keyof SN, {filter: ObjectAlike, listener: NotificationListener<any>}>;
+	private $listeners: MultiMap<keyof SN, NotificationListenerRecord>;
 	
 	public constructor(debug?: Debug)
 	{
@@ -50,17 +48,17 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 	{
 		function resolveArgs(iArgs: IArguments, arg0: any, arg1: any, arg2: any) : [V, NotificationFilter<SN[V]>, NotificationListener<SN[V]>]
 		{
-			if(iArgs.length == 2) return [arg0, {} as NotificationFilter<SN[V]>, arg1];
+			if(iArgs.length == 2) return [arg0, null as NotificationFilter<SN[V]>, arg1];
 			if(iArgs.length == 3) return [arg0, arg1, arg2];
 			throw new ResolveOverloadArgsException("ScriptComm.addNotificationListener()");
 		}
 		const [variant, filter, listener] = resolveArgs(arguments, arg0, arg1, arg2); // TODO implement filtering
-		this.$listeners.set(variant, {filter, listener});
+		this.$listeners.set(variant, new NotificationListenerRecord(filter, listener));
 	}
 	
 	public removeNotificationListener<V extends keyof SN>(variant: V, listener: NotificationListener<SN[V]>)
 	{
-		this.$listeners.delete(variant, {filter: {}, listener}); // TODO this delete will not work becouse each time I create new object
+		this.$listeners.delete(variant, new NotificationListenerRecord(null, listener)); 
 	}
 
 	private async dispatchNotification(packet: MessagePacket, sender: MessageSender, sendResponse: SendResponse) 
@@ -68,7 +66,7 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 		this.$debug?.logFunction("ScriptComm.dispatchNotification(), packet.variant=$0, packet.data=$1", Debug.ScriptNotification, packet.variant, packet.data);
 		const listeners = this.$listeners.get(packet.variant);
 		this.$debug?.log("ScriptComm.dispatchNotification(), variant=$0, count=$1, listeners=$2", packet.variant, listeners?.length, listeners);
-		listeners.forEach(({filter, listener}) => this.dispatchNotificationFilter.call(this, filter, listener, packet.data));
+		listeners.forEach(record => this.dispatchNotificationFilter.call(this, record.filter, record.listener, packet.data));
 		this.$debug?.endFunction();
 	}
 	
@@ -80,3 +78,29 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 	}
 }
 
+class NotificationListenerRecord implements IComparable<NotificationListenerRecord>
+{
+	public $filter: any;
+	public $listener: NotificationListener<any>
+	
+	public constructor(filter: any, listener: NotificationListener<any>)
+	{
+		this.$filter = filter;
+		this.$listener = listener;
+	}
+		
+	public isEqual(this: NotificationListenerRecord, listener: NotificationListenerRecord) : boolean
+	{
+		return this.listener == listener.listener && this.filter == listener.filter;
+	}
+	
+	public get filter() 
+	{
+		return this.$filter;
+	}
+	
+	public get listener()
+	{
+		return this.$listener;
+	}
+}
