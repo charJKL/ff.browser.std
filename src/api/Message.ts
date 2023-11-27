@@ -11,11 +11,10 @@ export type MessageListenerArgs<L extends Func> = Parameters<L>[0];
 export type CanOmitArgs<SM extends SupportedMessages, VM extends keyof SM> = {} extends MessageListenerArgs<SM[VM]> ? VM : never;
 
 export type NotificationVariant = string;
-export type NotificationBlueprint = (filter?: ObjectAlike) => ObjectAlike;
-export type NotificationFilter<B extends NotificationBlueprint> = undefined extends Parameters<B>[0] ? never : Parameters<B>[0];
+export type NotificationBlueprint = () => ObjectAlike;
+export type NotificationFilter<B extends NotificationBlueprint> = (value: ReturnType<B>) => boolean;
 export type NotificationData<B extends NotificationBlueprint> = ReturnType<B>;
 export type NotificationListener<B extends NotificationBlueprint> = (data: NotificationData<B>) => void;
-export type CanOmitFilter<SN extends SupportedNotifications, V extends keyof SN> = undefined extends Parameters<SN[V]>[0] ? V : never;
 
 export type SupportedMessages = { [variant: MessageVariant]: MessageListener };
 export type SupportedNotifications = { [variant: NotificationVariant]: NotificationBlueprint };

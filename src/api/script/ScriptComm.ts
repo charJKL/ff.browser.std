@@ -1,9 +1,11 @@
 import { Message, MessagePacket, MessagePacketResponse, MessageSender, MessageListenerArgs, CanOmitArgs, SupportedMessages, SupportedNotifications} from "../Message";
-import { ObjectAlike, NotificationBlueprint, NotificationListener, NotificationFilter, CanOmitFilter } from "../Message";
+import { NotificationListener, NotificationFilter } from "../Message";
 import { ResolveOverloadArgsException } from "../../exceptions/ResolveOverloadArgsException";
 import { Debug } from "../../classes/Debug";
 import { MultiMap, IComparable } from "../../classes/MultiMap";
 import { MessageError } from "../MessageError";
+import { isNotNull, isNull } from "../../functions/isNull";
+import { isFalse } from "../../functions/isBoolean";
 
 // We dont use buildin `ResolveType` because then type hiting provided by IDE will be ugly.
 // Intellisense resolve type to certain level not deeper.
@@ -42,23 +44,32 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 		return result;
 	}
 
-	public addNotificationListener<V extends keyof SN>(variant: CanOmitFilter<SN, V>, listener: NotificationListener<SN[V]>) : void
+	public addNotificationListener<V extends keyof SN>(variant: V, listener: NotificationListener<SN[V]>) : void
 	public addNotificationListener<V extends keyof SN>(variant: V, filter: NotificationFilter<SN[V]>, listener: NotificationListener<SN[V]>) : void
 	public addNotificationListener<V extends keyof SN>(arg0: any, arg1: any, arg2?: any) : void
 	{
-		function resolveArgs(iArgs: IArguments, arg0: any, arg1: any, arg2: any) : [V, NotificationFilter<SN[V]>, NotificationListener<SN[V]>]
+		function resolveArgs(iArgs: IArguments, arg0: any, arg1: any, arg2: any) : [V, NotificationFilter<SN[V]> | null, NotificationListener<SN[V]>]
 		{
-			if(iArgs.length == 2) return [arg0, null as NotificationFilter<SN[V]>, arg1];
+			if(iArgs.length == 2) return [arg0, null, arg1];
 			if(iArgs.length == 3) return [arg0, arg1, arg2];
 			throw new ResolveOverloadArgsException("ScriptComm.addNotificationListener()");
 		}
-		const [variant, filter, listener] = resolveArgs(arguments, arg0, arg1, arg2); // TODO implement filtering
+		const [variant, filter, listener] = resolveArgs(arguments, arg0, arg1, arg2);
 		this.$listeners.set(variant, new NotificationListenerRecord(filter, listener));
 	}
 	
-	public removeNotificationListener<V extends keyof SN>(variant: V, listener: NotificationListener<SN[V]>)
+	public removeNotificationListener<V extends keyof SN>(variant: V, listener: NotificationListener<SN[V]>) : void;
+	public removeNotificationListener<V extends keyof SN>(variant: V, filter: NotificationFilter<SN[V]>, listener: NotificationListener<SN[V]>) : void;
+	public removeNotificationListener<V extends keyof SN>(arg0: any, arg1: any, arg2?: any) : void
 	{
-		this.$listeners.delete(variant, new NotificationListenerRecord(null, listener)); 
+		function resolveArgs(iArgs: IArguments, arg0: any, arg1: any, arg2: any) : [V, NotificationFilter<SN[V]> | null, NotificationListener<SN[V]>]
+		{
+			if(iArgs.length == 2) return [arg0, null, arg1];
+			if(iArgs.length == 3) return [arg0, arg1, arg2];
+			throw new ResolveOverloadArgsException("ScriptComm.addNotificationListener()");
+		}
+		const [variant, filter, listener] = resolveArgs(arguments, arg0, arg1, arg2);
+		this.$listeners.delete(variant, new NotificationListenerRecord(filter, listener)); 
 	}
 
 	private async dispatchNotification(packet: MessagePacket, sender: MessageSender, sendResponse: SendResponse) 
@@ -66,24 +77,23 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 		this.$debug?.logFunction("ScriptComm.dispatchNotification(), packet.variant=$0, packet.data=$1", Debug.ScriptNotification, packet.variant, packet.data);
 		const listeners = this.$listeners.get(packet.variant);
 		this.$debug?.log("ScriptComm.dispatchNotification(), variant=$0, count=$1, listeners=$2", packet.variant, listeners?.length, listeners);
-		listeners.forEach(record => this.dispatchNotificationFilter.call(this, record.filter, record.listener, packet.data));
+		listeners.forEach(record => this.dispatchNotificationFilter(record.filter, record.listener, packet.data));
 		this.$debug?.endFunction();
 	}
 	
-	private async dispatchNotificationFilter(filter: any, listener:any, data: any)
+	private async dispatchNotificationFilter(filter: NotificationFilter<any> | null, listener: NotificationListener<any>, data: any)
 	{
-		console.log("dispatchNotificationFilter", filter, listener, data);
-		const doesPassFilter = () => true; // TODO implement this;
-		if(doesPassFilter()) await listener(data);
+		if(isNotNull(filter) && isFalse(filter(data))) return;
+		await listener(data);
 	}
 }
 
 class NotificationListenerRecord implements IComparable<NotificationListenerRecord>
 {
-	public $filter: any;
+	public $filter: NotificationFilter<any> | null;
 	public $listener: NotificationListener<any>
 	
-	public constructor(filter: any, listener: NotificationListener<any>)
+	public constructor(filter: NotificationFilter<any> | null, listener: NotificationListener<any>)
 	{
 		this.$filter = filter;
 		this.$listener = listener;
