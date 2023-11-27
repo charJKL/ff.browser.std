@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { ScriptComm, ResolveReturn } from "../api/script/ScriptComm";
 import { SupportedMessages, CanOmitArgs, MessageListenerArgs, ObjectAlike } from "../api/Message";
+import { NotificationFilter } from "../api/Message";
 import { SupportedNotifications, NotificationData } from "../api/Message";
+import { ResolveOverloadArgsException } from "../exceptions/ResolveOverloadArgsException";
 
 export type BackgroundState<T> = [Waiting | T, (state: T) => void];
 export type Notification<T> = { wasRaised: boolean } & Partial<T>;
@@ -39,19 +41,28 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 		return [data, setData];
 	}
 	
-	public useNotification<V extends keyof SN>(variant: V) : Notification<NotificationData<SN[V]>> // TODO support filtering here.
+	public useNotification<V extends keyof SN>(variant: V) : Notification<NotificationData<SN[V]>>;
+	public useNotification<V extends keyof SN>(variant: V, filter?: NotificationFilter<SN[V]>) : Notification<NotificationData<SN[V]>>;
+	public useNotification<V extends keyof SN>(arg0: any, arg1?: any) : Notification<NotificationData<SN[V]>>
 	{
-		const [data, setData] = useState<NotificationData<SN[V]>>(0 as any);
+		function resolveArgs(iArgs: IArguments, arg0: any, arg1: any, ) : [V, NotificationFilter<SN[V]> | null]
+		{
+			if(iArgs.length == 1) return [arg0, null];
+			if(iArgs.length == 2) return [arg0, arg1];
+			throw new ResolveOverloadArgsException("ScriptCommReact.useNotification()");
+		}
+		const [variant, filter] = resolveArgs(arguments, arg0, arg1);
+		const [data, setData] = useState<NotificationData<SN[V]>>(null as any);
 		const wasRaised = useRef(false);
-		
+
 		useEffect(() => {
-			this.$scriptComm.addNotificationListener(variant, onNotification as SN[V]); // `as` is required because https://stackoverflow.com/questions/56505560/how-to-fix-ts2322-could-be-instantiated-with-a-different-subtype-of-constraint
+			this.$scriptComm.addNotificationListener(variant, filter, onNotification); // TODO here filter is dependency, should be in array.
 			function onNotification(args: ObjectAlike)
 			{
 				setData(args);
 				wasRaised.current = true;
 			}
-			return () => this.$scriptComm.removeNotificationListener(variant, onNotification as SN[V]);
+			return () => this.$scriptComm.removeNotificationListener(variant, onNotification);
 		}, [variant]);
 		
 		const notification = { wasRaised: wasRaised.current, ...data };

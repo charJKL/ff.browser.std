@@ -45,7 +45,7 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 	}
 
 	public addNotificationListener<V extends keyof SN>(variant: V, listener: NotificationListener<SN[V]>) : void
-	public addNotificationListener<V extends keyof SN>(variant: V, filter: NotificationFilter<SN[V]>, listener: NotificationListener<SN[V]>) : void
+	public addNotificationListener<V extends keyof SN>(variant: V, filter: NotificationFilter<SN[V]> | null, listener: NotificationListener<SN[V]>) : void
 	public addNotificationListener<V extends keyof SN>(arg0: any, arg1: any, arg2?: any) : void
 	{
 		function resolveArgs(iArgs: IArguments, arg0: any, arg1: any, arg2: any) : [V, NotificationFilter<SN[V]> | null, NotificationListener<SN[V]>]
