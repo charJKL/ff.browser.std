@@ -14,6 +14,7 @@ export { MessageFailure } from "./api/MessageFailure";
 export { isFailure } from "./api/isFailure";
 
 export { ScriptCommReact } from "./react/ScriptCommReact";
+export { createWaitingContext } from "./react/createWaitingContext";
 export { wasRaised, isWaiting } from "./react/ScriptCommReact";
 
 export { Watcher } from "./classes/Watcher";

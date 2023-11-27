@@ -90,7 +90,7 @@ export function wasRaised<T extends Notification<any>>(notification: T) : notifi
 	return false;
 }
 
-class Waiting
+export class Waiting
 {
 	private desc = "Waiting on response"
 }
