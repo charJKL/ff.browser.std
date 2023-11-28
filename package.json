@@ -13,7 +13,7 @@
 	},
 	"scripts": {
 		"test": "jest",
-		"build": "rm -rf ./desc/* && tsc"
+		"build": "tsc"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.23.3",
