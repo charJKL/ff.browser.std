@@ -1,0 +1,11 @@
+{
+	"ignorePatterns": 
+	[
+		"dist/**"
+	],
+  "extends": 
+	[
+		"react-app",
+		"plugin:react-hooks/recommended"
+	]
+}
