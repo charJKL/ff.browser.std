@@ -94,7 +94,8 @@ export class Debug
 	// default `Object` type.
 	private transformErrorType(argument: any) : any
 	{
-		if((argument instanceof Error) == false) return argument;
+		const isNotError = (value: any) => (value instanceof Error) === false;
+		if(isNotError(argument)) return argument;
 		
 		const err : any = {};
 					err.name = argument.constructor.name;
