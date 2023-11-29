@@ -2,10 +2,10 @@
 export { AddonSetupEvent } from "./api/background/AddonSetupEvent";
 export type { InstalledDetails, UpdateAvailableDetails } from "./api/background/AddonSetupEvent";
 export { BackgroundApiError } from "./api/background/BackgroundApiError";
-export { BackgroundComm } from "./api/background/BackgroundComm";
-
+export { BackgroundComm, type MessageCommArgs, type MessageCommListener, type MessageCommReturn } from "./api/background/BackgroundComm";
 export { BrowserStorage } from "./api/background/BrowserStorage";
 export { NetRequestBlock } from "./api/background/NetRequestBlock";
+
 
 export { ScriptComm } from "./api/script/ScriptComm";
 

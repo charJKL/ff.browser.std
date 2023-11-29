@@ -1,14 +1,13 @@
 import { MessageFailure } from "./MessageFailure";
 import { MessageFailureVariant, MessageFailureInfo } from "./MessageFailure";
 
-type Func = (args: any) => any;
 export type ObjectAlike = any; // must be any because https://stackoverflow.com/questions/77460398/why-object-doesnt-conform-type-described-by-index-signatures
-export type MessageSender = browser.runtime.MessageSender;
-export type MessageVariant = string;
-export type MessageListener = (args: ObjectAlike) => any;
 
-export type MessageListenerArgs<L extends Func> = Parameters<L>[0];
-export type CanOmitArgs<SM extends SupportedMessages, VM extends keyof SM> = {} extends MessageListenerArgs<SM[VM]> ? VM : never;
+export type MessageVariant = string;
+export type MessageSender = browser.runtime.MessageSender;
+export type MessageBlueprint = (args: ObjectAlike) => any;
+export type MessageArgs<L extends MessageBlueprint> = Parameters<L>[0];
+export type CanOmitArgs<SM extends SupportedMessages, VM extends keyof SM> = {} extends MessageArgs<SM[VM]> ? VM : never;
 
 export type NotificationVariant = string;
 export type NotificationBlueprint = () => ObjectAlike;
@@ -16,7 +15,7 @@ export type NotificationFilter<B extends NotificationBlueprint> = (value: Return
 export type NotificationData<B extends NotificationBlueprint> = ReturnType<B>;
 export type NotificationListener<B extends NotificationBlueprint> = (data: NotificationData<B>) => void;
 
-export type SupportedMessages = { [variant: MessageVariant]: MessageListener };
+export type SupportedMessages = { [variant: MessageVariant]: MessageBlueprint };
 export type SupportedNotifications = { [variant: NotificationVariant]: NotificationBlueprint };
 
 export type MessagePacket = { variant: MessageVariant, data: ObjectAlike }

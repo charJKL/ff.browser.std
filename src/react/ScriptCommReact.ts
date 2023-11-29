@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { ScriptComm, ResolveReturn } from "../api/script/ScriptComm";
-import { SupportedMessages, CanOmitArgs, MessageListenerArgs, ObjectAlike } from "../api/Message";
+import { SupportedMessages, CanOmitArgs, MessageArgs, ObjectAlike } from "../api/Message";
 import { NotificationFilter } from "../api/Message";
 import { SupportedNotifications, NotificationData } from "../api/Message";
 import { ResolveOverloadArgsException } from "../exceptions/ResolveOverloadArgsException";
@@ -18,8 +18,8 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 	}
 	
 	public useBackgroundState<V extends keyof SM>(variant: CanOmitArgs<SM, V>) : BackgroundState<ResolveReturn<SM[V]>>;
-	public useBackgroundState<V extends keyof SM>(variant: V, args: MessageListenerArgs<SM[V]>) : BackgroundState<ResolveReturn<SM[V]>>;
-	public useBackgroundState<V extends keyof SM>(variant: V, args?: MessageListenerArgs<SM[V]>) : BackgroundState<ResolveReturn<SM[V]>>
+	public useBackgroundState<V extends keyof SM>(variant: V, args: MessageArgs<SM[V]>) : BackgroundState<ResolveReturn<SM[V]>>;
+	public useBackgroundState<V extends keyof SM>(variant: V, args?: MessageArgs<SM[V]>) : BackgroundState<ResolveReturn<SM[V]>>
 	{
 		const [data, setData] = useState<ResolveReturn<SM[V]> | Waiting>(new Waiting());
 		
@@ -71,8 +71,8 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 	}
 	
 	public async sendMessage<V extends keyof SM>(variant: CanOmitArgs<SM, V>) :Promise<ResolveReturn<SM[V]>>;
-	public async sendMessage<V extends keyof SM>(variant: V, args: MessageListenerArgs<SM[V]>) : Promise<ResolveReturn<SM[V]>>;
-	public async sendMessage<V extends keyof SM>(variant: V, args?: MessageListenerArgs<SM[V]>) : Promise<ResolveReturn<SM[V]>>
+	public async sendMessage<V extends keyof SM>(variant: V, args: MessageArgs<SM[V]>) : Promise<ResolveReturn<SM[V]>>;
+	public async sendMessage<V extends keyof SM>(variant: V, args?: MessageArgs<SM[V]>) : Promise<ResolveReturn<SM[V]>>
 	{
 		return await this.$scriptComm.sendMessage(variant, args);
 	}

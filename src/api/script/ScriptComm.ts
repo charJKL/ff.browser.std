@@ -1,4 +1,4 @@
-import { Message, MessagePacket, MessagePacketResponse, MessageSender, MessageListenerArgs, CanOmitArgs, SupportedMessages, SupportedNotifications} from "../Message";
+import { Message, MessagePacket, MessagePacketResponse, MessageSender, MessageArgs, CanOmitArgs, SupportedMessages, SupportedNotifications} from "../Message";
 import { NotificationListener, NotificationFilter } from "../Message";
 import { ResolveOverloadArgsException } from "../../exceptions/ResolveOverloadArgsException";
 import { Debug } from "../../classes/Debug";
@@ -24,13 +24,13 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 	}
 	
 	public async sendMessage<V extends keyof SM>(variant: CanOmitArgs<SM,V>) : Promise<ResolveReturn<SM[V]>>;
-	public async sendMessage<V extends keyof SM>(variant: V, args: MessageListenerArgs<SM[V]>) : Promise<ResolveReturn<SM[V]>>;
+	public async sendMessage<V extends keyof SM>(variant: V, args: MessageArgs<SM[V]>) : Promise<ResolveReturn<SM[V]>>;
 	public async sendMessage<V extends keyof SM>(arg0: any, arg1?: any) : Promise<any>
 	{
-		function resolveArgs(iArgs: IArguments, arg0: any, arg1: any) : [V, MessageListenerArgs<SM[V]>]
+		function resolveArgs(iArgs: IArguments, arg0: any, arg1: any) : [V, MessageArgs<SM[V]>]
 		{
-			if(iArgs.length == 1) return [arg0 as V, {} as MessageListenerArgs<SM[V]>];
-			if(iArgs.length == 2) return [arg0 as V, arg1 as MessageListenerArgs<SM[V]>];
+			if(iArgs.length == 1) return [arg0 as V, {} as MessageArgs<SM[V]>];
+			if(iArgs.length == 2) return [arg0 as V, arg1 as MessageArgs<SM[V]>];
 			throw new ResolveOverloadArgsException("ScriptComm.sendMessage()");
 		}
 		const [variant, args] = resolveArgs(arguments, arg0, arg1);

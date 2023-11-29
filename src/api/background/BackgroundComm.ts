@@ -1,4 +1,4 @@
-import { Message, SupportedMessages, SupportedNotifications, MessageListener, MessageListenerArgs, NotificationData, MessageSender, MessagePacket } from "../Message";
+import { Message, SupportedMessages, SupportedNotifications, MessageBlueprint, MessageArgs, NotificationData, MessageSender, MessagePacket } from "../Message";
 import { BackgroundApiError } from "./BackgroundApiError";
 import { Debug } from "../../classes/Debug";
 import { isUndefined } from "../../functions/isUndefined";
@@ -7,12 +7,16 @@ import { MissingListenerException } from "../../exceptions/MissingListenerExcept
 
 type BrowserTab = browser.tabs.Tab;
 type SendResponse = (response?: {}) => void;
-type ExtendedMessageListener<L extends MessageListener> = (args: {sender: MessageSender} & MessageListenerArgs<L>) => Promise<ReturnType<L>> | ReturnType<L>;
+
+type AllowListenerBeAsync<T> = Promise<T> | T;
+export type MessageCommArgs<B extends MessageBlueprint> = {sender: MessageSender} & MessageArgs<B>;
+export type MessageCommReturn<B extends MessageBlueprint> = AllowListenerBeAsync<ReturnType<B>>;
+export type MessageCommListener<B extends MessageBlueprint> = (args: MessageCommArgs<B>) => MessageCommReturn<B>;
 
 export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
 	private $debug: Debug ;
-	private $listeners: Map<keyof SM, ExtendedMessageListener<any>>;
+	private $listeners: Map<keyof SM, MessageCommListener<any>>;
 	
 	public constructor(debug: Debug)
 	{
@@ -21,7 +25,7 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 		this.$debug = debug;
 	}
 	
-	public addMessageListener<V extends keyof SM>(variant: V, listener: ExtendedMessageListener<SM[V]>)
+	public addMessageListener<V extends keyof SM>(variant: V, listener: MessageCommListener<SM[V]>)
 	{
 		this.$listeners.set(variant, listener);
 	}
