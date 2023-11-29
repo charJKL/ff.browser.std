@@ -17,6 +17,7 @@ export { ScriptCommReact } from "./react/ScriptCommReact";
 export { createWaitingContext } from "./react/createWaitingContext";
 export { wasRaised, isWaiting } from "./react/ScriptCommReact";
 
+export { Event } from "./classes/Event";
 export { Watcher } from "./classes/Watcher";
 export { Debug } from "./classes/Debug";
 export { TypedError} from "./classes/TypedError";
