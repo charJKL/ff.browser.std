@@ -37,13 +37,15 @@ export class SetupEvents
 		return this.$onUpdateAvailable;
 	}
 	
-	constructor()
+	constructor(onStarupIsAlsoOnInstalledToHelpDebug: boolean) // TODO I don't like it, use build system `DEBUG` const for this?
 	{
 		this.$onStartup = new SetupEvent("onStartup");
 		this.$onInstalled = new SetupEvent("onInstalled");
 		this.$onSuspend = new SetupEvent("onSuspend");
 		this.$onSuspendCanceled = new SetupEvent("onSuspendCanceled");
 		this.$onUpdateAvailable = new SetupEvent("onUpdateAvailable");
+		
+		if(onStarupIsAlsoOnInstalledToHelpDebug) this.$onStartup = this.$onInstalled as any;
 	}
 }
 
