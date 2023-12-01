@@ -4,7 +4,7 @@ type AddonSetupEventBlueprint<N extends SupportedEvents> = AddonSetupEventList[N
 export type InstalledDetails = browser.runtime._OnInstalledDetails;
 export type UpdateAvailableDetails = browser.runtime._OnUpdateAvailableDetails;
 
-export class AddonSetupEvent
+export class SetupEvents
 {
 	private readonly $onStartup: SetupEvent<"onStartup">;
 	private readonly $onInstalled: SetupEvent<"onInstalled">;

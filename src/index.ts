@@ -1,6 +1,6 @@
 
-export { AddonSetupEvent } from "./api/background/AddonSetupEvent";
-export type { InstalledDetails, UpdateAvailableDetails } from "./api/background/AddonSetupEvent";
+export { SetupEvents } from "./api/background/SetupEvents";
+export type { InstalledDetails, UpdateAvailableDetails } from "./api/background/SetupEvents";
 export { BackgroundApiError } from "./api/background/BackgroundApiError";
 export { BackgroundComm, type MessageCommArgs, type MessageCommListener, type MessageCommReturn } from "./api/background/BackgroundComm";
 export { BrowserStorage } from "./api/background/BrowserStorage";
