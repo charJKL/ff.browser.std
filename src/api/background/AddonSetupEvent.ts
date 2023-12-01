@@ -1,46 +1,79 @@
+type SupportedEvents = keyof typeof browser.runtime & keyof AddonSetupEventList ;
+type AddonSetupEventBlueprint<N extends SupportedEvents> = AddonSetupEventList[N];
+
 export type InstalledDetails = browser.runtime._OnInstalledDetails;
 export type UpdateAvailableDetails = browser.runtime._OnUpdateAvailableDetails;
 
 export class AddonSetupEvent
 {
-	public addEventListener<V extends AddonSetupEventName>(event: V, listener: AddonSetupEventListener[V]) : void
+	private readonly $onStartup: SetupEvent<"onStartup">;
+	private readonly $onInstalled: SetupEvent<"onInstalled">;
+	private readonly $onSuspend: SetupEvent<"onSuspend">;
+	private readonly $onSuspendCanceled: SetupEvent<"onSuspendCanceled">;
+	private readonly $onUpdateAvailable: SetupEvent<"onUpdateAvailable">;
+	
+	public get onStartup()
 	{
-		const isEvent = <V extends AddonSetupEventName>(variant: V, event: AddonSetupEventName, listener: any) : listener is AddonSetupEventListener[V] => variant === event;
-		if(isEvent("Installed", event, listener))
-		{
-			browser.runtime.onInstalled.addListener(listener);
-			return;
-		}
-		if(isEvent("Startup", event, listener))
-		{
-			browser.runtime.onStartup.addListener(listener);
-			return;
-		}
-		if(isEvent("Suspend", event, listener))
-		{
-			browser.runtime.onSuspend.addListener(listener);
-			return;
-		}
-		if(isEvent("SuspendCanceled", event, listener))
-		{
-			browser.runtime.onSuspendCanceled.addListener(listener);
-			return;
-		}
-		if(isEvent("UpdateAvailable", event, listener))
-		{
-			browser.runtime.onUpdateAvailable.addListener(listener);
-			return;
-		}
+		return this.$onStartup;
+	}
+	
+	public get onInstalled()
+	{
+		return this.$onInstalled;
+	}
+	
+	public get onSuspend()
+	{
+		return this.$onSuspend;
+	}
+	
+	public get onSuspendCanceled()
+	{
+		return this.$onSuspendCanceled;
+	}
+	
+	public get onUpdateAvailable()
+	{
+		return this.$onUpdateAvailable;
+	}
+	
+	constructor()
+	{
+		this.$onStartup = new SetupEvent("onStartup");
+		this.$onInstalled = new SetupEvent("onInstalled");
+		this.$onSuspend = new SetupEvent("onSuspend");
+		this.$onSuspendCanceled = new SetupEvent("onSuspendCanceled");
+		this.$onUpdateAvailable = new SetupEvent("onUpdateAvailable");
 	}
 }
 
-type AddonSetupEventName = keyof AddonSetupEventList;
-type AddonSetupEventListener = AddonSetupEventList;
+class SetupEvent<N extends SupportedEvents>
+{
+	private $type : N;
+	
+	public constructor(type: N)
+	{
+		this.$type = type;
+	}
+	
+	public add(listener: AddonSetupEventBlueprint<N>) : this
+	{
+		browser.runtime[this.$type].addListener(listener as () => void);
+		return this;
+	}
+	
+	public remove(listener: AddonSetupEventBlueprint<N>) : this
+	{
+		browser.runtime[this.$type].removeListener(listener as () => void);
+		return this;
+	}
+}
+
 interface AddonSetupEventList
 {
-	"Startup": () => void,
-	"Installed": (details: InstalledDetails) => void,
-	"Suspend": () => void,
-	"SuspendCanceled": () => void,
-	"UpdateAvailable": (details: UpdateAvailableDetails) => void
+	"onStartup": () => void,
+	"onInstalled": (details: InstalledDetails) => void,
+	"onSuspend": () => void,
+	"onSuspendCanceled": () => void,
+	"onUpdateAvailable": (details: UpdateAvailableDetails) => void
 }
