@@ -1,9 +1,13 @@
 import { NetRequestRule } from "./NetRequestBlock";
 type BrowserTab = browser.tabs.Tab;
 
+
+
+type ObjectKey = string | number | symbol;
+
 export interface BackgroundApiErrorList
 {
-	"BrowserStorage": { method: string, reason: any },
+	"BrowserStorage": { key: ObjectKey, reason: any },
 	
 	"MessageListenerIsNotFound": {},
 	
