@@ -1,11 +1,9 @@
 import { Message, SupportedMessages, SupportedNotifications, MessageBlueprint, MessageArgs, NotificationData, MessageSender, MessagePacket } from "../Message";
 import { BackgroundApiError } from "./BackgroundApiError";
 import { Debug } from "../../classes/Debug";
-import { isNotUndefined, isUndefined } from "../../functions/isUndefined";
+import { isUndefined } from "../../functions/isUndefined";
 import { MessageError } from "../MessageError";
 import { MissingListenerException } from "../../exceptions/MissingListenerException";
-import { ResolveOverloadArgsException } from "../../exceptions/ResolveOverloadArgsException";
-import { isArray, isNotArray } from "../../functions/isArray";
 
 type BrowserTab = browser.tabs.Tab;
 type SendResponse = (response?: {}) => void;
@@ -13,15 +11,12 @@ type SendResponse = (response?: {}) => void;
 type AllowListenerBeAsync<T> = Promise<T> | T;
 export type MessageCommArgs<B extends MessageBlueprint> = {sender: MessageSender} & MessageArgs<B>;
 export type MessageCommReturn<B extends MessageBlueprint> = AllowListenerBeAsync<ReturnType<B>>;
-export type MessageCommListenerBefore<B extends MessageBlueprint> = (args: MessageCommArgs<B>) => MessageCommArgs<B> | void;
 export type MessageCommListener<B extends MessageBlueprint> = (args: MessageCommArgs<B>) => MessageCommReturn<B>;
-export type MessageCommListenerAfter<B extends MessageBlueprint> = (args: MessageCommArgs<B>, result: MessageCommReturn<B>) => MessageCommReturn<B>;
-export type MessageCommListenerChain<B extends MessageBlueprint> = [MessageCommListenerBefore<B>, MessageCommListener<B>, ...MessageCommListenerAfter<B>[]]
 
 export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
 	private $debug: Debug ;
-	private $listeners: Map<keyof SM, MessageCommListenerChain<any>>;
+	private $listeners: Map<keyof SM, MessageCommListener<any>>;
 	
 	public constructor(debug: Debug)
 	{
@@ -30,18 +25,9 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 		this.$debug = debug;
 	}
 	
-	public addMessageListener<V extends keyof SM>(variant: V, listeners: MessageCommListenerChain<SM[V]>) : void;
-	public addMessageListener<V extends keyof SM>(variant: V, listener: MessageCommListener<SM[V]>) : void;
-	public addMessageListener<V extends keyof SM>(arg0: V, arg1: unknown) : void
+	public addMessageListener<V extends keyof SM>(variant: V, listener: MessageCommListener<SM[V]>) : void
 	{
-		function resolveArgs(iArgs: IArguments, arg0: unknown, arg1: unknown) : [V, MessageCommListenerChain<SM[V]>]
-		{
-			if(isNotArray(arg1)) return [arg0 as V, [arg1] as unknown as MessageCommListenerChain<SM[V]>];
-			if(isArray(arg1)) return [arg0 as V, arg1 as MessageCommListenerChain<SM[V]>];
-			throw new ResolveOverloadArgsException("BackgroundComm.addMessageListener()");
-		}
-		const [variant, listeners] = resolveArgs(arguments, arg0, arg1);
-		this.$listeners.set(variant, listeners);
+		this.$listeners.set(variant, listener);
 	}
 	
 	static WantedUrlIsntOnpenedOnAnyTab = "Wanted url isn't opened on any tab.";
@@ -68,11 +54,9 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 		try
 		{
 			this.$debug?.log("BackgroundComm.dispatchRequest(), packet=$0", Debug.BackgroundMessage, packet);
-			const listeners = this.$listeners.get(packet.variant);
-			if(isUndefined(listeners) || listeners.isEmpty()) throw new MissingListenerException(`There is missing listener for ${packet.variant}.`);
-			console.log(listeners);
-			const result = await listeners.reduce(async (result: unknown, listener) => await listener({sender, ...packet.data}, result) ?? result, undefined);
-			console.log(result);
+			const listener = this.$listeners.get(packet.variant);
+			if(isUndefined(listener)) throw new MissingListenerException(`There is missing listener for ${packet.variant}.`);
+			const result = await listener({sender, ...packet.data});
 			const response = Message.pack(result);
 			return Promise.resolve(response);
 		}
