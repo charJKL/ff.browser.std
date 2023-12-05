@@ -22,9 +22,9 @@ export class Event<D>
 		return this;
 	}
 	
-	public invoke(args: D) : this
+	public async invoke(args: D) : Promise<this>
 	{
-		this.$listeners.forEach(listener => listener(args));
+		await Promise.allSettled(this.$listeners.map(listener => listener(args)));
 		return this;
 	}
 }
