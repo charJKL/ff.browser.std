@@ -1,3 +1,4 @@
+import { hasProp } from "../functions/hasProp";
 
 export interface IComparable<T>
 {
@@ -20,7 +21,7 @@ export class MultiMap<K, V>
 	
 	public delete(key: K, value: V) : this
 	{
-		const isComparable = (value: any) : value is IComparable<V> => typeof value.isEqual !== "undefined";
+		const isComparable = (value: unknown) : value is IComparable<V> => hasProp(value, "isEqual");
 		const values = this.$map.get(key) ?? [];
 		const index = isComparable(value) ? values.findIndex((v) => value.isEqual(v)) : values.indexOf(value);
 		if(index >= 0) values.splice(index, 1);
