@@ -1,6 +1,6 @@
 import { MultiMap } from "./MultiMap";
 
-type Func = (...args: any) => any;
+type Func<R = unknown> = (...args: unknown[]) => R;
 type AssureParameters<T> = T extends Func ? Parameters<T> : never;
 type AssureReturn<T> = T extends Func ? ReturnType<T> : never;
 type OnlyFunctions<T> = keyof { [Key in keyof T as T[Key] extends Func ? Key : never]: T[Key] }
@@ -15,13 +15,13 @@ interface WatcherInterface<T>
 
 function WatcherImplementation<T extends object>(obj: T) : Watched<T>
 {
-	const beforeWatchers = new MultiMap<keyof T, Func>;
-	const afterWatchers = new MultiMap<keyof T, Func>;
-	const addBeforeCallWatcher = (name: OnlyFunctions<T>, watcher: Func) => beforeWatchers.set(name, watcher);
+	const beforeWatchers = new MultiMap<keyof T, Func<unknown[]>>();
+	const afterWatchers = new MultiMap<keyof T, Func>();
+	const addBeforeCallWatcher = (name: OnlyFunctions<T>, watcher: Func<unknown[]>) => beforeWatchers.set(name, watcher);
 	const addAfterCallWatcher = (name: OnlyFunctions<T>, watcher: Func) => afterWatchers.set(name, watcher);
 	function wrapFunction(name: keyof T)
 	{
-		return function(...args: any[])
+		return function(...args: unknown[])
 		{
 			let vars = args;
 			if(beforeWatchers.has(name)) vars = beforeWatchers.get(name)!.reduce((accumulator, watcher) => watcher(...accumulator), vars);
@@ -34,10 +34,10 @@ function WatcherImplementation<T extends object>(obj: T) : Watched<T>
 	}
 	const handler = 
 	{
-		get(target: T, prop: string | symbol, receiver: any) : any
+		get(target: T, prop: string | symbol, receiver: unknown) : unknown
 		{
-			if(prop == "addBeforeCallWatcher") return addBeforeCallWatcher;
-			if(prop == "addAfterCallWatcher") return addAfterCallWatcher;
+			if(prop === "addBeforeCallWatcher") return addBeforeCallWatcher;
+			if(prop === "addAfterCallWatcher") return addAfterCallWatcher;
 			if(typeof target[prop as keyof T] === "function")
 			{
 				return wrapFunction(prop as keyof T);
@@ -48,4 +48,4 @@ function WatcherImplementation<T extends object>(obj: T) : Watched<T>
 	return new Proxy(obj, handler) as Watched<T>
 }
 
-export const Watcher = WatcherImplementation as unknown as WatcherInterface<any>;
+export const Watcher = WatcherImplementation as unknown as WatcherInterface<unknown>;

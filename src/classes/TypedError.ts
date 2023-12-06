@@ -1,17 +1,17 @@
 import { Debug } from "./Debug";
 
 export type TypedErrorVariant = string;
-export type TypedErrorInfo = any;
+export type TypedErrorInfo = unknown;
 
 export class TypedError<V extends TypedErrorVariant, I extends TypedErrorInfo> extends Error
 {
 	public static Any = Symbol("AnyPossibleError");
 	private $variant : V;
 	private $info : I;
-	private $parent: TypedError<any, any> | null
+	private $parent: TypedError<string, unknown> | null
 	private $debug?: Debug;
 	
-	constructor(variant: V, message: string, info: I, parent: TypedError<any, any> | null, debug?: Debug)
+	constructor(variant: V, message: string, info: I, parent: TypedError<string, unknown> | null, debug?: Debug)
 	{
 		super(message);
 		this.$debug = debug;

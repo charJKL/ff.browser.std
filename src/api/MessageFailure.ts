@@ -1,5 +1,5 @@
 export type MessageFailureVariant = string;
-export type MessageFailureInfo = any;
+export type MessageFailureInfo = unknown;
 
 export class MessageFailure<V extends MessageFailureVariant, I extends MessageFailureInfo>
 {

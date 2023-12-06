@@ -1,12 +1,9 @@
 import { BackgroundApiError } from "./BackgroundApiError";
 import { Debug } from "../../classes/Debug";
-import { isNotUndefined } from "../../functions/isUndefined";
-import { isArray } from "../../functions/isArray";
-import { isNotNull } from "../../functions/isNull";
 import { hasProp } from "../../functions/hasProp";
 
 type StorageArea = browser.storage.StorageArea;
-type StorageBlueprint = {[key: string]: any};
+type StorageBlueprint = {[key: string]: unknown};
 type StorageItemNames<B extends StorageBlueprint> = keyof B;
 
 export class BrowserStorage<B extends StorageBlueprint>
@@ -30,8 +27,8 @@ export class BrowserStorage<B extends StorageBlueprint>
 	{
 		const entry = { [key]: this.$blueprint[key] };
 		const unserialize = (obj: StorageBlueprint) => this.decode(obj);
-		const flatReturnedObject = (obj: StorageBlueprint) : B[K] => obj[key as keyof StorageBlueprint];
-		const returnBackgroundApiError = (reason: any) => new BackgroundApiError("BrowserStorage", BrowserStorage.GetMethodThrowInternalError, {key, reason}, this.$debug);
+		const flatReturnedObject = (obj: StorageBlueprint) : B[K] => obj[key as keyof StorageBlueprint] as B[K];
+		const returnBackgroundApiError = (reason: unknown) => new BackgroundApiError("BrowserStorage", BrowserStorage.GetMethodThrowInternalError, {key, reason}, this.$debug);
 		return this.$storage.get(entry).then(unserialize).then(flatReturnedObject).catch(returnBackgroundApiError);
 	}
 	
@@ -40,54 +37,62 @@ export class BrowserStorage<B extends StorageBlueprint>
 		const entry = { [key]: value }
 		const serialize = (obj: StorageBlueprint) => this.encode(obj);
 		const returnSavedObject = () => value;
-		const returnBackgroundApiError = (reason: any) => new BackgroundApiError("BrowserStorage", BrowserStorage.SaveMethodThrowInternalError, {key, reason}, this.$debug);
+		const returnBackgroundApiError = (reason: unknown) => new BackgroundApiError("BrowserStorage", BrowserStorage.SaveMethodThrowInternalError, {key, reason}, this.$debug);
 		return this.$storage.set(serialize(entry)).then(returnSavedObject).catch(returnBackgroundApiError);
 	}
 	
 	public remove<I extends StorageItemNames<B>>(key: I): Promise<boolean | BackgroundApiError<"BrowserStorage">>
 	{
 		const returnTrueOnSuccess = () => true;
-		const returnBackgroundApiError = (reason: any) => new BackgroundApiError("BrowserStorage", BrowserStorage.RemoveMethodThrowInternalError, {key, reason}, this.$debug);
+		const returnBackgroundApiError = (reason: unknown) => new BackgroundApiError("BrowserStorage", BrowserStorage.RemoveMethodThrowInternalError, {key, reason}, this.$debug);
 		return this.$storage.remove(key as string).then(returnTrueOnSuccess).catch(returnBackgroundApiError);
 	}
 	
-	private encode(value: StorageBlueprint) : StorageBlueprint
+	private encode(blueprint: StorageBlueprint) : StorageBlueprint
 	{
-		for(const key in value)
+		for(const key in blueprint)
 		{
-			if(BrowserStorageMapEncoder.isMapInstance(value[key])) value[key] = BrowserStorageMapEncoder.encode(value[key]);
+			const value = blueprint[key];
+			if(BrowserStorageMapEncoder.isMapInstance(value)) blueprint[key] = BrowserStorageMapEncoder.encode(value);
 		}
-		return value;
+		return blueprint;
 	}
 	
-	private decode(result: StorageBlueprint) : StorageBlueprint
+	private decode(blueprint: StorageBlueprint) : StorageBlueprint
 	{
-		for(const key in result)
+		for(const key in blueprint)
 		{
-			if(BrowserStorageMapEncoder.isMapInstance(result[key])) result[key] = BrowserStorageMapEncoder.decode(result[key]);
+			const value = blueprint[key];
+			if(BrowserStorageMapEncoder.isMapEncodedInstane(value)) blueprint[key] = BrowserStorageMapEncoder.decode(value);
 		}
-		return result;
+		return blueprint;
 	}
 }
 
-type MapEncoded = { isMapInstance: "true", entries: Array<{key: any, value: any}> };
+// TODO move this class to diffrent file.
+type MapEncoded = { isMapInstance: "true", entries: Array<{key: unknown, value: unknown}> };
 class BrowserStorageMapEncoder
 {
-	public static isMapInstance(value: unknown) : value is MapEncoded
+	public static isMapInstance(value: unknown) : value is Map<unknown, unknown>
+	{
+		return value instanceof Map;
+	}
+	
+	public static isMapEncodedInstane(value: unknown) : value is MapEncoded
 	{
 		const hasIsMapInstanceProp = hasProp(value, "isMapInstance");
 		const hasEntriesProp = hasProp(value, "entries");
 		return hasIsMapInstanceProp && hasEntriesProp;
 	}
 	
-	public static encode(value: Map<any, any>) : MapEncoded
+	public static encode(value: Map<unknown, unknown>) : MapEncoded
 	{
 		const map : MapEncoded = { isMapInstance: "true", entries: [] };
 		for(const [key, entry] of value) map.entries.push({key: key, value: entry});
 		return map;
 	}
 	
-	public static decode(value: MapEncoded) : Map<any, any>
+	public static decode(value: MapEncoded) : Map<unknown, unknown>
 	{
 		const map = new Map();
 		for(const entry of value.entries) map.set(entry.key, entry.value);

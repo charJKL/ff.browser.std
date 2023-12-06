@@ -2,13 +2,13 @@ import { AssertNotReachableDueToExhaustiveLogic } from "../exceptions/AssertNotR
 import { MessageFailure } from "./MessageFailure";
 import { MessageFailureVariant, MessageFailureInfo } from "./MessageFailure";
 
-export type ObjectAlike = unknown; // must be any because https://stackoverflow.com/questions/77460398/why-object-doesnt-conform-type-described-by-index-signatures
+export type ObjectAlike = Record<string, unknown>; 
 
 export type MessageVariant = string;
 export type MessageSender = browser.runtime.MessageSender;
-export type MessageBlueprint = (args: ObjectAlike) => unknown;
-export type MessageArgs<L extends MessageBlueprint> = Parameters<L>[0];
-export type CanOmitArgs<SM extends SupportedMessages, VM extends keyof SM> = {} extends MessageArgs<SM[VM]> ? VM : never;
+export type MessageBlueprint = (args?: ObjectAlike) => unknown;
+export type MessageArgs<L extends MessageBlueprint> = undefined extends Parameters<L>[0] ? undefined : Parameters<L>[0] ;
+export type CanOmitArgs<SM extends SupportedMessages, VM extends Supported<SM>> = {} extends MessageArgs<SM[VM]> ? VM : never;
 
 export type NotificationVariant = string;
 export type NotificationBlueprint = () => ObjectAlike;
@@ -18,8 +18,9 @@ export type NotificationListener<B extends NotificationBlueprint> = (data: Notif
 
 export type SupportedMessages = { [variant: MessageVariant]: MessageBlueprint };
 export type SupportedNotifications = { [variant: NotificationVariant]: NotificationBlueprint };
+export type Supported<S> = keyof S & string;
 
-export type MessagePacket = { variant: MessageVariant, data: ObjectAlike }
+export type MessagePacket = { variant: Supported<SupportedMessages>, data: ObjectAlike }
 export type MessagePacketSuccess = { status: "Success", data: unknown };
 export type MessagePacketFailure = { status: "Failure", data: SerializedMessageFailure };
 export type MessagePacketResponse = MessagePacketSuccess | MessagePacketFailure;
@@ -28,7 +29,7 @@ type SerializedMessageFailure = { variant: MessageFailureVariant, message: strin
 
 export class Message
 {
-	public static prepare(variant: string, data: ObjectAlike) : MessagePacket
+	public static prepare(variant: Supported<SupportedMessages>, data: ObjectAlike) : MessagePacket
 	{
 		return { variant: variant, data: data };
 	}

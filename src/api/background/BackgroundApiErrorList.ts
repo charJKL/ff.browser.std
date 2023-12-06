@@ -7,14 +7,14 @@ type ObjectKey = string | number | symbol;
 
 export interface BackgroundApiErrorList
 {
-	"BrowserStorage": { key: ObjectKey, reason: any },
+	"BrowserStorage": { key: ObjectKey, reason: unknown },
 	
 	"MessageListenerIsNotFound": {},
 	
-	"NetRequestBlock": { method: string, reason: any },
+	"NetRequestBlock": { method: string, reason: unknown },
 	"RuleWasNotFound": { id: number, rules: NetRequestRule[] },
-	"RegexpIsNotSupported": { regexp: string, reason: any },
+	"RegexpIsNotSupported": { regexp: string, reason: unknown },
 	
 	"NoTabsWasFound": { url: string },
-	"NotificationSendWasntSuccessful": { tabs: BrowserTab[], results: any[] } // TODO what type `results` has?
+	"NotificationSendWasntSuccessful": { tabs: BrowserTab[], results: unknown[] } // TODO what type `results` has?
 }

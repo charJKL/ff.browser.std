@@ -45,7 +45,7 @@ export class SetupEvents
 		this.$onSuspendCanceled = new SetupEvent("onSuspendCanceled");
 		this.$onUpdateAvailable = new SetupEvent("onUpdateAvailable");
 		
-		if(onStarupIsAlsoOnInstalledToHelpDebug) this.$onStartup = this.$onInstalled as any;
+		if(onStarupIsAlsoOnInstalledToHelpDebug) this.$onStartup = this.$onInstalled as unknown as SetupEvent<"onStartup">;
 	}
 }
 

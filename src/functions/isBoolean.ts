@@ -1,9 +1,9 @@
 
 export function isTrue(value: boolean)
 {
-	return value == true;
+	return value === true;
 }
 export function isFalse(value: boolean)
 {
-	return value == false;
+	return value === false;
 }

@@ -1,4 +1,4 @@
-import { Message, SupportedMessages, SupportedNotifications, MessageBlueprint, MessageArgs, NotificationData, MessageSender, MessagePacket } from "../Message";
+import { Message, SupportedMessages, SupportedNotifications, Supported, MessageBlueprint, MessageArgs, NotificationData, MessageSender, MessagePacket } from "../Message";
 import { BackgroundApiError } from "./BackgroundApiError";
 import { Debug } from "../../classes/Debug";
 import { isUndefined } from "../../functions/isUndefined";
@@ -9,14 +9,15 @@ type BrowserTab = browser.tabs.Tab;
 type SendResponse = (response?: {}) => void;
 
 type AllowListenerBeAsync<T> = Promise<T> | T;
-export type MessageCommArgs<B extends MessageBlueprint> = {sender: MessageSender} & MessageArgs<B>;
+type MessageBlueprintOptionalArgs<B extends MessageBlueprint> = undefined extends MessageArgs<B> ? {} : MessageArgs<B>;
+export type MessageCommArgs<B extends MessageBlueprint> = {sender: MessageSender} & MessageBlueprintOptionalArgs<B>;
 export type MessageCommReturn<B extends MessageBlueprint> = AllowListenerBeAsync<ReturnType<B>>;
 export type MessageCommListener<B extends MessageBlueprint> = (args: MessageCommArgs<B>) => MessageCommReturn<B>;
 
 export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
 	private $debug: Debug ;
-	private $listeners: Map<keyof SM, MessageCommListener<any>>;
+	private $listeners: Map<Supported<SM>, MessageCommListener<MessageBlueprint>>;
 	
 	public constructor(debug: Debug)
 	{
@@ -25,18 +26,18 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 		this.$debug = debug;
 	}
 	
-	public addMessageListener<V extends keyof SM>(variant: V, listener: MessageCommListener<SM[V]>) : void
+	public addMessageListener<V extends Supported<SM>>(variant: V, listener: MessageCommListener<SM[V]>) : void
 	{
 		this.$listeners.set(variant, listener);
 	}
 	
 	static WantedUrlIsntOnpenedOnAnyTab = "Wanted url isn't opened on any tab.";
 	static NotificationWasntSendSucessfulToAllTabs = "Notification wasnt send sucessfule to all tabs.";
-	public async sendNotification<V extends keyof SN>(tabUrl: string, variant: V, args: NotificationData<SN[V]>) : Promise<boolean | BackgroundApiError<"NoTabsWasFound"> | BackgroundApiError<"NotificationSendWasntSuccessful">>
+	public async sendNotification<V extends Supported<SN>>(tabUrl: string, variant: V, args: NotificationData<SN[V]>) : Promise<boolean | BackgroundApiError<"NoTabsWasFound"> | BackgroundApiError<"NotificationSendWasntSuccessful">>
 	{
 		this.$debug?.log("BackgroundComm.sendNotification(), tabUrl=$0, variant=$1, args=$2", Debug.BackgroundNotification, tabUrl, variant, args);
 		const tabs = await browser.tabs.query({url: tabUrl}); // TODO should BackgroundComm use directly `browser.tabs`? or had inject `BrowserTabs`?
-		if(tabs.length == 0) return new BackgroundApiError("NoTabsWasFound", BackgroundComm.WantedUrlIsntOnpenedOnAnyTab, {url: tabUrl}, this.$debug);
+		if(tabs.isEmpty()) return new BackgroundApiError("NoTabsWasFound", BackgroundComm.WantedUrlIsntOnpenedOnAnyTab, {url: tabUrl}, this.$debug);
 		const results = tabs.map(async function sendNotifiactionToTabs(tab: BrowserTab)
 		{
 			if(isUndefined(tab.id)) return;
@@ -44,7 +45,7 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 			const result = await browser.tabs.sendMessage(tab.id, packet);
 			return result;
 		});
-		const wasErrorOccuredDuringSending = (v: any) => v instanceof Error;
+		const wasErrorOccuredDuringSending = (v: unknown) => v instanceof Error;
 		if(results.find(wasErrorOccuredDuringSending)) return new BackgroundApiError("NotificationSendWasntSuccessful", BackgroundComm.NotificationWasntSendSucessfulToAllTabs, {tabs: tabs, results: results}, this.$debug)
 		return true;
 	}

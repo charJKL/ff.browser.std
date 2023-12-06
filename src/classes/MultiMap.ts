@@ -25,7 +25,7 @@ export class MultiMap<K, V>
 		const values = this.$map.get(key) ?? [];
 		const index = isComparable(value) ? values.findIndex((v) => value.isEqual(v)) : values.indexOf(value);
 		if(index >= 0) values.splice(index, 1);
-		if(values.length == 0) this.$map.delete(key);
+		if(values.length === 0) this.$map.delete(key);
 		return this;
 	}
 	

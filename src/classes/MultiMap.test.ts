@@ -38,10 +38,10 @@ test("Remove complex value implementing `IComparable` interface remove correct v
 
 class MultiMapRecord implements IComparable<MultiMapRecord>
 {
-	public first: any;
-	public second: any;
+	public first: unknown;
+	public second: unknown;
 	
-	public constructor(first: any, second: any)
+	public constructor(first: unknown, second: unknown)
 	{
 		this.first = first;
 		this.second = second;
@@ -50,6 +50,6 @@ class MultiMapRecord implements IComparable<MultiMapRecord>
 	public isEqual(this: MultiMapRecord, obj: MultiMapRecord) : boolean
 	{
 		console.log("inside", this);
-		return this.first == obj.first && this.second == obj.second;
+		return this.first === obj.first && this.second === obj.second;
 	}
 }

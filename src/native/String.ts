@@ -18,11 +18,11 @@ declare global
 
 String.prototype.isEqual = function(string : string) : boolean
 {
-	return this == string;
+	return this === string;
 }
 String.prototype.isEmpty = function() : boolean
 {
-	return this.length == 0;
+	return this.length === 0;
 }
 String.prototype.isNotEmpty = function() : boolean
 {
@@ -34,17 +34,17 @@ String.prototype.prefix = function(prefix: string) : string
 }
 String.prototype.unprefix = function(prefix: string) : string
 {
-	if(this.startsWith(prefix) == false) return this.toString();
+	if(this.startsWith(prefix) === false) return this.toString();
 	return this.substring(prefix.length);
 }
 String.prototype.trimPrefix = function(prefix: string) : string
 {
-	if(this.startsWith(prefix) == false) return this.toString();
+	if(this.startsWith(prefix) === false) return this.toString();
 	return this.substring(prefix.length);
 }
 String.prototype.trimSuffix = function(suffix: string) : string
 {
-	if(this.endsWith(suffix) == false) return this.toString();
+	if(this.endsWith(suffix) === false) return this.toString();
 	return this.substring(0, this.length - suffix.length);
 }
 String.prototype.find = function(search: string) : MarkedString

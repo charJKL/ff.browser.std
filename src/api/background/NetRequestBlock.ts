@@ -109,7 +109,7 @@ export class NetRequestBlock
 		const rules = await this.getRules();
 		if(isError("NetRequestBlock", rules)) return rules;
 		
-		const rule = rules.find((rule) => rule.id == id);
+		const rule = rules.find((rule) => rule.id === id);
 		if(isUndefined(rule)) return new BackgroundApiError("RuleWasNotFound", NetRequestBlock.RuleWithWantedIdDoesntExist, {id, rules}, this.$debug)
 		return rule;
 	}
@@ -122,13 +122,15 @@ export class NetRequestBlock
 		const rulesIds = rules.map(r => r.id).sortAsNumbers();
 		for(let i = 0; i < rulesIds.length; i++)
 		{
-			if(rulesIds[i] != i + 1) return i + 1;
+			if(rulesIds[i] !== i + 1) return i + 1;
 		}
 		return rulesIds.length + 1;
 	}
 	
+	
+	// TODO remove this method, return Error locally.
 	static CallToBrowserAPIMethodReturnException = "Call to one of `browser.declarativeNetRequest` methods return browser internal exception.";
-	private catchHandler(method: string, reason: any) : BackgroundApiError<"NetRequestBlock">
+	private catchHandler(method: string, reason: unknown) : BackgroundApiError<"NetRequestBlock">
 	{
 		return new BackgroundApiError("NetRequestBlock", NetRequestBlock.CallToBrowserAPIMethodReturnException, {method, reason}, this.$debug);
 	}

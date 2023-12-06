@@ -7,7 +7,7 @@ interface Map<K, V>
 }
 Map.prototype.hasNot= function<K>(key: K) : boolean
 {
-	return this.has(key) == false;
+	return this.has(key) === false;
 }
 Map.prototype.items = function<V>() : Array<V>
 {
