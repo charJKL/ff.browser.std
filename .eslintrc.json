@@ -3,9 +3,17 @@
 	[
 		"dist/**"
 	],
+	"plugins":
+	[
+		"@typescript-eslint/eslint-plugin"
+	],
   "extends": 
 	[
 		"react-app",
 		"plugin:react-hooks/recommended"
-	]
+	],
+	"rules":
+	{
+		"@typescript-eslint/no-explicit-any": "error"
+	}
 }
