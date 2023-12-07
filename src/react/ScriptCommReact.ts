@@ -1,16 +1,15 @@
 import { useState, useEffect, useRef } from "react";
-import { ScriptComm, ResolveReturn } from "../api/script/ScriptComm";
+import { ScriptComm, ScriptCommReturn } from "../api/script/ScriptComm";
 import { SupportedMessages, CanOmitArgs, MessageArgs } from "../api/Message";
 import { Supported } from "../api/Message";
 import { SupportedNotifications, NotificationBlueprint, NotificationData, NotificationFilter} from "../api/Message";
 import { ResolveOverloadArgsException } from "../exceptions/ResolveOverloadArgsException";
 
-
 type BackgroundVar<T> = Waiting | T;
 export type BackgroundState<T> = [BackgroundVar<T>, (state: T) => void];
 export type Notification<T> = { wasRaised: boolean } & Partial<T>;
 
-/* eslint-disable react-hooks/rules-of-hooks */
+/* eslint-disable react-hooks/rules-of-hooks -- it's special class which is some kind of gate between react and browser.std */
 export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
 	private $scriptComm: ScriptComm<SM, SN>;
@@ -20,16 +19,23 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 		this.$scriptComm = scriptComm;
 	}
 	
-	public useBackgroundState<V extends Supported<SM>>(variant: CanOmitArgs<SM, V>) : BackgroundState<ResolveReturn<SM[V]>>;
-	public useBackgroundState<V extends Supported<SM>>(variant: V, args: MessageArgs<SM[V]>) : BackgroundState<ResolveReturn<SM[V]>>;
-	public useBackgroundState<V extends Supported<SM>>(variant: V, args?: MessageArgs<SM[V]>) : BackgroundState<ResolveReturn<SM[V]>>
+	public useBackgroundState<V extends Supported<SM>>(variant: CanOmitArgs<SM, V>) : BackgroundState<ScriptCommReturn<SM[V]>>;
+	public useBackgroundState<V extends Supported<SM>>(variant: V, args: MessageArgs<SM[V]>) : BackgroundState<ScriptCommReturn<SM[V]>>;
+	public useBackgroundState<V extends Supported<SM>>(arg0: V, arg1?: MessageArgs<SM[V]>) : BackgroundState<ScriptCommReturn<SM[V]>>
 	{
-		const [data, setData] = useState<ResolveReturn<SM[V]> | Waiting>(new Waiting());
+		function resolveArgs(iArgs: IArguments, arg0: unknown, arg1: unknown) : [V, MessageArgs<SM[V]>]
+		{
+			if(iArgs.length === 1) return [arg0 as V, {} as MessageArgs<SM[V]>];
+			if(iArgs.length === 2) return [arg0 as V, arg1 as MessageArgs<SM[V]>];
+			throw new ResolveOverloadArgsException("ScriptComm.sendMessage()");
+		}
+		const [variant, args] = resolveArgs(arguments, arg0, arg1);
+		const [data, setData] = useState<ScriptCommReturn<SM[V]> | Waiting>(new Waiting());
 		
 		useEffect(() => {
 			let ignore = false;
 			this.$scriptComm.sendMessage(variant, args).then(thenHandler).catch(catchHandler)
-			function thenHandler(data: ResolveReturn<SM[V]>)
+			function thenHandler(data: ScriptCommReturn<SM[V]>)
 			{
 				if(ignore === true) return;
 				setData(data)
@@ -73,10 +79,17 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 		return notification;
 	}
 	
-	public async sendMessage<V extends Supported<SN>>(variant: CanOmitArgs<SM, V>) :Promise<ResolveReturn<SM[V]>>;
-	public async sendMessage<V extends Supported<SN>>(variant: V, args: MessageArgs<SM[V]>) : Promise<ResolveReturn<SM[V]>>;
-	public async sendMessage<V extends Supported<SN>>(variant: V, args?: MessageArgs<SM[V]>) : Promise<ResolveReturn<SM[V]>>
+	public async sendMessage<V extends Supported<SM>>(variant: CanOmitArgs<SM, V>) :Promise<ScriptCommReturn<SM[V]>>;
+	public async sendMessage<V extends Supported<SM>>(variant: V, args: MessageArgs<SM[V]>) : Promise<ScriptCommReturn<SM[V]>>;
+	public async sendMessage<V extends Supported<SM>>(arg0: V, arg1?: MessageArgs<SM[V]>) : Promise<ScriptCommReturn<SM[V]>>
 	{
+		function resolveArgs(iArgs: IArguments, arg0: unknown, arg1: unknown) : [V, MessageArgs<SM[V]>]
+		{
+			if(iArgs.length === 1) return [arg0 as V, {} as MessageArgs<SM[V]>];
+			if(iArgs.length === 2) return [arg0 as V, arg1 as MessageArgs<SM[V]>];
+			throw new ResolveOverloadArgsException("ScriptComm.sendMessage()");
+		}
+		const [variant, args] = resolveArgs(arguments, arg0, arg1);
 		return await this.$scriptComm.sendMessage(variant, args);
 	}
 }

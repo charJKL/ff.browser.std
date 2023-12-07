@@ -1,4 +1,4 @@
-import { Message, MessagePacket, MessagePacketResponse, MessageSender, MessageArgs, CanOmitArgs, Supported, SupportedMessages, SupportedNotifications, NotificationBlueprint, ObjectAlike} from "../Message";
+import { Message, MessagePacket, MessagePacketResponse, MessageSender, MessageArgs, CanOmitArgs, Supported, SupportedMessages, SupportedNotifications, NotificationBlueprint, MessageBlueprint} from "../Message";
 import { NotificationListener, NotificationFilter } from "../Message";
 import { ResolveOverloadArgsException } from "../../exceptions/ResolveOverloadArgsException";
 import { Debug } from "../../classes/Debug";
@@ -7,11 +7,9 @@ import { MessageError } from "../MessageError";
 import { isNotNull } from "../../functions/isNull";
 import { isFalse } from "../../functions/isBoolean";
 
-// TODO this doesn't make sense, remove this:
-// We dont use buildin `ResolveType` because then type hiting provided by IDE will be ugly.
-// Intellisense resolve type to certain level not deeper.
-export type ResolveReturn<T> = T extends (...any: unknown[]) => infer R ? R | MessageError<"FatalResponse"> : unknown; 
+
 type SendResponse = (response?: {}) => void;
+export type ScriptCommReturn<B extends MessageBlueprint> = MessageError<"FatalResponse"> | ReturnType<B> ;
 
 export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
@@ -25,14 +23,14 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 		this.$listeners = new MultiMap();
 	}
 	
-	public async sendMessage<V extends Supported<SM>>(variant: CanOmitArgs<SM,V>) : Promise<ResolveReturn<SM[V]>>;
-	public async sendMessage<V extends Supported<SM>>(variant: V, args: MessageArgs<SM[V]>) : Promise<ResolveReturn<SM[V]>>;
+	public async sendMessage<V extends Supported<SM>>(variant: CanOmitArgs<SM,V>) : Promise<ScriptCommReturn<SM[V]>>;
+	public async sendMessage<V extends Supported<SM>>(variant: V, args: MessageArgs<SM[V]>) : Promise<ScriptCommReturn<SM[V]>>;
 	public async sendMessage<V extends Supported<SM>>(arg0: unknown, arg1?: unknown) : Promise<unknown>
 	{
-		function resolveArgs(iArgs: IArguments, arg0: unknown, arg1: unknown) : [V, Exclude<MessageArgs<SM[V]>, undefined>]
+		function resolveArgs(iArgs: IArguments, arg0: unknown, arg1: unknown) : [V, MessageArgs<SM[V]>]
 		{
-			if(iArgs.length === 1) return [arg0 as V, {} as Exclude<MessageArgs<SM[V]>, undefined>];
-			if(iArgs.length === 2) return [arg0 as V, arg1 as Exclude<MessageArgs<SM[V]>, undefined>];
+			if(iArgs.length === 1) return [arg0 as V, {} as MessageArgs<SM[V]>];
+			if(iArgs.length === 2) return [arg0 as V, arg1 as MessageArgs<SM[V]>];
 			throw new ResolveOverloadArgsException("ScriptComm.sendMessage()");
 		}
 		const [variant, args] = resolveArgs(arguments, arg0, arg1);
@@ -83,7 +81,7 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 		this.$debug?.endFunction();
 	}
 	
-	private async dispatchNotificationFilter(filter: NotificationFilter<NotificationBlueprint> | null, listener: NotificationListener<NotificationBlueprint>, data: ObjectAlike)
+	private async dispatchNotificationFilter(filter: NotificationFilter<NotificationBlueprint> | null, listener: NotificationListener<NotificationBlueprint>, data: unknown)
 	{
 		if(isNotNull(filter) && isFalse(filter(data))) return;
 		await listener(data);

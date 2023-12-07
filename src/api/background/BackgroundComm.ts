@@ -1,16 +1,16 @@
-import { Message, SupportedMessages, SupportedNotifications, Supported, MessageBlueprint, MessageArgs, NotificationData, MessageSender, MessagePacket } from "../Message";
+import { Message, SupportedMessages, SupportedNotifications, Supported, MessageBlueprint, MessageArgs, NotificationData, MessageSender, MessagePacket, MessageBlueprintParametered } from "../Message";
 import { BackgroundApiError } from "./BackgroundApiError";
 import { Debug } from "../../classes/Debug";
-import { isUndefined } from "../../functions/isUndefined";
 import { MessageError } from "../MessageError";
 import { MissingListenerException } from "../../exceptions/MissingListenerException";
+import { isUndefined } from "../../functions/isUndefined";
+import { isObject } from "../../functions/isObject";
 
 type BrowserTab = browser.tabs.Tab;
 type SendResponse = (response?: {}) => void;
 
 type AllowListenerBeAsync<T> = Promise<T> | T;
-type MessageBlueprintOptionalArgs<B extends MessageBlueprint> = undefined extends MessageArgs<B> ? {} : MessageArgs<B>;
-export type MessageCommArgs<B extends MessageBlueprint> = {sender: MessageSender} & MessageBlueprintOptionalArgs<B>;
+export type MessageCommArgs<B extends MessageBlueprint> = B extends MessageBlueprintParametered ? {sender: MessageSender} & MessageArgs<B> : {sender: MessageSender};
 export type MessageCommReturn<B extends MessageBlueprint> = AllowListenerBeAsync<ReturnType<B>>;
 export type MessageCommListener<B extends MessageBlueprint> = (args: MessageCommArgs<B>) => MessageCommReturn<B>;
 
@@ -57,7 +57,8 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 			this.$debug?.log("BackgroundComm.dispatchRequest(), packet=$0", Debug.BackgroundMessage, packet);
 			const listener = this.$listeners.get(packet.variant);
 			if(isUndefined(listener)) throw new MissingListenerException(`There is missing listener for ${packet.variant}.`);
-			const result = await listener({sender, ...packet.data});
+			const args = isObject(packet.data) ? {sender, ...packet.data} : {sender};
+			const result = await listener(args);
 			const response = Message.pack(result);
 			return Promise.resolve(response);
 		}

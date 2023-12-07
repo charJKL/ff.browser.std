@@ -2,16 +2,16 @@ import { AssertNotReachableDueToExhaustiveLogic } from "../exceptions/AssertNotR
 import { MessageFailure } from "./MessageFailure";
 import { MessageFailureVariant, MessageFailureInfo } from "./MessageFailure";
 
-export type ObjectAlike = Record<string, unknown>; 
-
 export type MessageVariant = string;
 export type MessageSender = browser.runtime.MessageSender;
-export type MessageBlueprint = (args?: ObjectAlike) => unknown;
-export type MessageArgs<L extends MessageBlueprint> = undefined extends Parameters<L>[0] ? undefined : Parameters<L>[0] ;
-export type CanOmitArgs<SM extends SupportedMessages, VM extends Supported<SM>> = {} extends MessageArgs<SM[VM]> ? VM : never;
+export type MessageBlueprintParametless = () => unknown;
+export type MessageBlueprintParametered = (args: any) => unknown; // eslint-disable-line -- `any` is sole abstract type which conform any argument, indirectly because https://stackoverflow.com/questions/37006008/typescript-index-signature-is-missing-in-type#comment96038128_37006179
+export type MessageBlueprint = MessageBlueprintParametless | MessageBlueprintParametered;
+export type MessageArgs<B extends MessageBlueprint> = B extends MessageBlueprintParametered ? Parameters<B>[0] : undefined;
+export type CanOmitArgs<SM extends SupportedMessages, VM extends Supported<SM>> = SM[VM] extends MessageBlueprintParametless ? VM : never;
 
 export type NotificationVariant = string;
-export type NotificationBlueprint = () => ObjectAlike;
+export type NotificationBlueprint = () => unknown;
 export type NotificationFilter<B extends NotificationBlueprint> = (value: ReturnType<B>) => boolean;
 export type NotificationData<B extends NotificationBlueprint> = ReturnType<B>;
 export type NotificationListener<B extends NotificationBlueprint> = (data: NotificationData<B>) => void;
@@ -20,7 +20,7 @@ export type SupportedMessages = { [variant: MessageVariant]: MessageBlueprint };
 export type SupportedNotifications = { [variant: NotificationVariant]: NotificationBlueprint };
 export type Supported<S> = keyof S & string;
 
-export type MessagePacket = { variant: Supported<SupportedMessages>, data: ObjectAlike }
+export type MessagePacket = { variant: Supported<SupportedMessages>, data: unknown }
 export type MessagePacketSuccess = { status: "Success", data: unknown };
 export type MessagePacketFailure = { status: "Failure", data: SerializedMessageFailure };
 export type MessagePacketResponse = MessagePacketSuccess | MessagePacketFailure;
@@ -29,7 +29,7 @@ type SerializedMessageFailure = { variant: MessageFailureVariant, message: strin
 
 export class Message
 {
-	public static prepare(variant: Supported<SupportedMessages>, data: ObjectAlike) : MessagePacket
+	public static prepare(variant: Supported<SupportedMessages>, data: unknown) : MessagePacket
 	{
 		return { variant: variant, data: data };
 	}
