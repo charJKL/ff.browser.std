@@ -9,8 +9,9 @@ type NetRequestRuleCondition = browser.declarativeNetRequest._RuleCondition;
 type NetRequestRuleAction = browser.declarativeNetRequest._RuleAction;
 type NetRequestRuleActionRedirect = browser.declarativeNetRequest._RuleActionRedirect;
 type NetRequestUpdatePacket = browser.declarativeNetRequest._UpdateDynamicRulesOptions;
-type NetRequestRegexpArgs = browser.declarativeNetRequest.RegexOptions;
-type RegexpSupportedResult = browser.declarativeNetRequest.RegexpSupportedResult;
+type IsRegexSupportedRegexOptions = browser.declarativeNetRequest._IsRegexSupportedRegexOptions;
+type IsRegexSupportedReturnResult = browser.declarativeNetRequest._IsRegexSupportedReturnResult;
+
 
 export type NetRequestRule = browser.declarativeNetRequest.Rule;
 export type NetRequestRulePart = { regexp: string };
@@ -92,8 +93,8 @@ export class NetRequestBlock
 	static RegexpValueForBlockingRuleIsNotSupported = "Provided regexp for blocking rule is not supported, it will not work.";
 	public async isRegexpSupported(regexp: string) : Promise<boolean | BackgroundApiError<"RegexpIsNotSupported">>
 	{
-		const isNotSupported = (value: RegexpSupportedResult) : value is Required<RegexpSupportedResult> => value.isSupported === false;
-		const regexpArgs = {} as NetRequestRegexpArgs;
+		const isNotSupported = (value: IsRegexSupportedReturnResult) : value is Required<IsRegexSupportedReturnResult> => value.isSupported === false;
+		const regexpArgs = {} as IsRegexSupportedRegexOptions;
 					regexpArgs.regex = regexp;
 					regexpArgs.isCaseSensitive = false;
 					regexpArgs.requireCapturing = true;
