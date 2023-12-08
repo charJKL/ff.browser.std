@@ -1,4 +1,5 @@
 import { ResolveOverloadArgsException } from "../exceptions/ResolveOverloadArgsException";
+import { isSymbol, isNotSymbol } from "../functions/isSymbol";
 import "../native/String";
 import "../native/Array";
 
@@ -55,8 +56,10 @@ export class Debug
 		function resolveArgs(iArgs: IArguments, arg0: unknown, args: unknown[]) : [string, keyof typeof Debug.Formats, unknown[]]
 		{
 			const styles = Object.getOwnPropertySymbols(Debug.Formats);
-			if(typeof args[0] === "symbol" && styles.notContains(args[0])) return [arg0 as string, Debug.None, args]; // TODO implement isSymbol() function
-			if(typeof args[0] === "symbol" && styles.contains(args[0])) return [arg0 as string, args[0], args.slice(1)];
+			if(args.length === 0) return [arg0 as string, Debug.None, []];
+			if(args.length > 0 && isNotSymbol(args[0])) return [arg0 as string, Debug.None, args];
+			if(args.length > 0 && isSymbol(args[0]) && styles.notContains(args[0])) return [arg0 as string, Debug.None, args];
+			if(args.length > 0 && isSymbol(args[0]) && styles.contains(args[0])) return [arg0 as string, args[0], args.slice(1)];
 			throw new ResolveOverloadArgsException("Debug.log()");
 		}
 		const [rawEntireMessage, rawFormat, rawValues] = resolveArgs(arguments, arg0, args);
