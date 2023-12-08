@@ -50,7 +50,7 @@ export class Message
 	{
 		const isSuccess = (value: MessagePacketResponse) : value is MessagePacketSuccess => value.status === "Success";
 		const isFailure = (value: MessagePacketResponse) : value is MessagePacketFailure => value.status === "Failure";
-		if(isSuccess(response)) return response.status;
+		if(isSuccess(response)) return response.data;
 		if(isFailure(response)) return new MessageFailure(response.data.variant, response.data.message, response.data.info);
 		throw new AssertNotReachableDueToExhaustiveLogic("Message.unpack()");
 	}
