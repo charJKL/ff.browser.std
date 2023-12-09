@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { ScriptComm, ScriptCommReturn } from "../api/script/ScriptComm";
 import { SupportedMessages, CanOmitArgs, MessageArgs } from "../api/Message";
 import { Supported } from "../api/Message";
@@ -32,8 +32,12 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 		const [variant, args] = resolveArgs(arguments, arg0, arg1);
 		const [data, setData] = useState<ScriptCommReturn<SM[V]> | Waiting>(new Waiting());
 		
+		// we doom here, because we need somehow change `args` to primitive type to be easy passable to `useEffect` deps.
+		// only way todoing so is `JSON.stringify` object.
+		const simplyfiedArgs = JSON.stringify(args);
 		useEffect(() => {
 			let ignore = false;
+			const args = JSON.parse(simplyfiedArgs);
 			this.$scriptComm.sendMessage(variant, args).then(thenHandler).catch(catchHandler)
 			function thenHandler(data: ScriptCommReturn<SM[V]>)
 			{
@@ -45,10 +49,11 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 				// const messageError = new MessageError("FatalResponse", "", {}, this.$debug) // TODO can't return `MessageError` because it's not background error, it's frontend. Also for the same reason I don't have access to this.$debug.
 			}
 			return () => { ignore = true; }
-		}, [variant, args]);
+		}, [variant, simplyfiedArgs]);
 		
 		return [data, setData];
 	}
+	
 	
 	public useNotification<V extends Supported<SN>>(variant: V) : Notification<NotificationData<SN[V]>>;
 	public useNotification<V extends Supported<SN>>(variant: V, filter?: NotificationFilter<SN[V]>) : Notification<NotificationData<SN[V]>>;
@@ -65,14 +70,14 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 		const wasRaised = useRef(false);
 
 		useEffect(() => {
-			this.$scriptComm.addNotificationListener(variant, filter, onNotification); // TODO here filter is function which changes on each render, should be useCallback()
+			this.$scriptComm.addNotificationListener(variant, filter, onNotification); 
 			function onNotification(args: Partial<NotificationData<SN[V]>>)
 			{
 				setData(args);
 				wasRaised.current = true;
 			}
 			return () => this.$scriptComm.removeNotificationListener(variant, onNotification);
-		}, [variant, filter]);
+		}, [variant, filter]); // TODO here filter is function which changes on each render, should be useCallback()
 		
 		const notification = { wasRaised: wasRaised.current, ...data };
 		if(wasRaised.current === true) wasRaised.current = false;
