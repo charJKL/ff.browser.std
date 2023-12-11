@@ -14,7 +14,7 @@ export type MessageCommArgs<B extends MessageBlueprint> = B extends MessageBluep
 export type MessageCommReturn<B extends MessageBlueprint> = AllowListenerBeAsync<ReturnType<B>>;
 export type MessageCommListener<B extends MessageBlueprint> = (args: MessageCommArgs<B>) => MessageCommReturn<B>;
 
-export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNotifications>
+export class BackendComm<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
 	private $debug: Debug ;
 	private $listeners: Map<Supported<SM>, MessageCommListener<MessageBlueprint>>;
@@ -35,9 +35,9 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 	static NotificationWasntSendSucessfulToAllTabs = "Notification wasnt send sucessfule to all tabs.";
 	public async sendNotification<V extends Supported<SN>>(tabUrl: string, variant: V, args: NotificationData<SN[V]>) : Promise<boolean | BackgroundApiError<"NoTabsWasFound"> | BackgroundApiError<"NotificationSendWasntSuccessful">>
 	{
-		this.$debug?.log("BackgroundComm.sendNotification(), tabUrl=$0, variant=$1, args=$2", Debug.BackgroundNotification, tabUrl, variant, args);
-		const tabs = await browser.tabs.query({url: tabUrl}); // TODO should BackgroundComm use directly `browser.tabs`? or had inject `BrowserTabs`?
-		if(tabs.isEmpty()) return new BackgroundApiError("NoTabsWasFound", BackgroundComm.WantedUrlIsntOnpenedOnAnyTab, {url: tabUrl}, this.$debug);
+		this.$debug?.log("BackendComm.sendNotification(), tabUrl=$0, variant=$1, args=$2", Debug.BackgroundNotification, tabUrl, variant, args);
+		const tabs = await browser.tabs.query({url: tabUrl}); // TODO should BackendComm use directly `browser.tabs`? or had inject `BrowserTabs`?
+		if(tabs.isEmpty()) return new BackgroundApiError("NoTabsWasFound", BackendComm.WantedUrlIsntOnpenedOnAnyTab, {url: tabUrl}, this.$debug);
 		const results = tabs.map(async function sendNotifiactionToTabs(tab: BrowserTab)
 		{
 			if(isUndefined(tab.id)) return;
@@ -46,7 +46,7 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 			return result;
 		});
 		const wasErrorOccuredDuringSending = (v: unknown) => v instanceof Error;
-		if(results.find(wasErrorOccuredDuringSending)) return new BackgroundApiError("NotificationSendWasntSuccessful", BackgroundComm.NotificationWasntSendSucessfulToAllTabs, {tabs: tabs, results: results}, this.$debug)
+		if(results.find(wasErrorOccuredDuringSending)) return new BackgroundApiError("NotificationSendWasntSuccessful", BackendComm.NotificationWasntSendSucessfulToAllTabs, {tabs: tabs, results: results}, this.$debug)
 		return true;
 	}
 	
@@ -54,7 +54,7 @@ export class BackgroundComm<SM extends SupportedMessages, SN extends SupportedNo
 	{
 		try
 		{
-			this.$debug?.log("BackgroundComm.dispatchRequest(), packet=$0", Debug.BackgroundMessage, packet);
+			this.$debug?.log("BackendComm.dispatchRequest(), packet=$0", Debug.BackgroundMessage, packet);
 			const listener = this.$listeners.get(packet.variant);
 			if(isUndefined(listener)) throw new MissingListenerException(`There is missing listener for ${packet.variant}.`);
 			const args = isObject(packet.data) ? {sender, ...packet.data} : {sender};
