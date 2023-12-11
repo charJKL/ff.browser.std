@@ -24,7 +24,7 @@ export interface BackendApiErrorList
 	
 	"MessageListenerIsNotFound": {},
 	
-	"NetRequestBlock": { method: string, reason: unknown },
+	"NetRequestBlock": { reason: unknown },
 	"RuleWasNotFound": { id: number, rules: NetRequestRule[] },
 	"RegexpIsNotSupported": { regexp: string, reason: unknown },
 	

@@ -28,9 +28,13 @@ export class NetRequestBlock
 		this.$debug = debug;
 	}
 	
+	static GetDynamicRulesMethodThrowInternalError = "`browser.declarativeNetRequest.getDynamicRules` method throw internal error.";
+	static UpdateDynamicRulesMethodThrowInternalError = "`browser.declarativeNetRequest.updateDynamicRules` method throw internal error.";
+	
 	public async getRules() : Promise<NetRequestRule[] | BackendApiError<"NetRequestBlock">>
 	{
-		return browser.declarativeNetRequest.getDynamicRules().catch(this.catchHandler.bind(this, "getDynamicRules"));
+		const returnBackendApiError = (reason: unknown) => new BackendApiError("NetRequestBlock", NetRequestBlock.GetDynamicRulesMethodThrowInternalError, {reason}, this.$debug);
+		return browser.declarativeNetRequest.getDynamicRules().catch(returnBackendApiError);
 	}
 	
 	public async addRule(rule: NetRequestRulePart) : Promise<NetRequestRule | BackendApiError<"NetRequestBlock"> | BackendApiError<"RegexpIsNotSupported">>
@@ -56,7 +60,8 @@ export class NetRequestBlock
 					netRequestRule.action.redirect.regexSubstitution = this.$redirect + "#\\0"; // suffix url with orginal target url
 		
 		const packet : NetRequestUpdatePacket = { addRules: [netRequestRule] };
-		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(this.catchHandler.bind(this, "updateDynamicRules"));
+		const returnBackendApiError = (reason: unknown) => new BackendApiError("NetRequestBlock", NetRequestBlock.UpdateDynamicRulesMethodThrowInternalError, {reason}, this.$debug);
+		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(returnBackendApiError);
 		if(isError("NetRequestBlock",result)) return result;
 		return netRequestRule;
 	}
@@ -72,7 +77,8 @@ export class NetRequestBlock
 		
 		rule.condition.regexFilter = change.regexp;
 		const packet : NetRequestUpdatePacket = { removeRuleIds: [rule.id], addRules: [rule] };
-		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(this.catchHandler.bind(this, "updateDynamicRules"));
+		const returnBackendApiError = (reason: unknown) => new BackendApiError("NetRequestBlock", NetRequestBlock.UpdateDynamicRulesMethodThrowInternalError, {reason}, this.$debug);
+		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(returnBackendApiError);
 		if(isError("NetRequestBlock", result)) return result;
 		return rule;
 	}
@@ -85,7 +91,8 @@ export class NetRequestBlock
 		
 		const packet = {} as NetRequestUpdatePacket;
 					packet.removeRuleIds = [rule.id];
-		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(this.catchHandler.bind(this, "updateDynamicRules"));
+		const returnBackendApiError = (reason: unknown) => new BackendApiError("NetRequestBlock", NetRequestBlock.UpdateDynamicRulesMethodThrowInternalError, {reason}, this.$debug);
+		const result = await browser.declarativeNetRequest.updateDynamicRules(packet).catch(returnBackendApiError);
 		if(isError("NetRequestBlock", result)) return result;
 		return true;
 	}
@@ -126,13 +133,5 @@ export class NetRequestBlock
 			if(rulesIds[i] !== i + 1) return i + 1;
 		}
 		return rulesIds.length + 1;
-	}
-	
-	
-	// TODO remove this method, return Error locally.
-	static CallToBrowserAPIMethodReturnException = "Call to one of `browser.declarativeNetRequest` methods return browser internal exception.";
-	private catchHandler(method: string, reason: unknown) : BackendApiError<"NetRequestBlock">
-	{
-		return new BackendApiError("NetRequestBlock", NetRequestBlock.CallToBrowserAPIMethodReturnException, {method, reason}, this.$debug);
 	}
 }
