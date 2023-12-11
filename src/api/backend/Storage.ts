@@ -6,7 +6,7 @@ type StorageArea = browser.storage.StorageArea;
 type StorageBlueprint = {[key: string]: unknown};
 type StorageItemNames<B extends StorageBlueprint> = keyof B;
 
-export class BrowserStorage<B extends StorageBlueprint>
+export class Storage<B extends StorageBlueprint>
 {
 	private $storage: StorageArea;
 	private $blueprint: B;
@@ -28,7 +28,7 @@ export class BrowserStorage<B extends StorageBlueprint>
 		const entry = { [key]: this.$blueprint[key] };
 		const unserialize = (obj: StorageBlueprint) => this.decode(obj);
 		const flatReturnedObject = (obj: StorageBlueprint) : B[K] => obj[key as keyof StorageBlueprint] as B[K];
-		const returnBackgroundApiError = (reason: unknown) => new BackgroundApiError("BrowserStorage", BrowserStorage.GetMethodThrowInternalError, {key, reason}, this.$debug);
+		const returnBackgroundApiError = (reason: unknown) => new BackgroundApiError("BrowserStorage", Storage.GetMethodThrowInternalError, {key, reason}, this.$debug);
 		return this.$storage.get(entry).then(unserialize).then(flatReturnedObject).catch(returnBackgroundApiError);
 	}
 	
@@ -37,14 +37,14 @@ export class BrowserStorage<B extends StorageBlueprint>
 		const entry = { [key]: value }
 		const serialize = (obj: StorageBlueprint) => this.encode(obj);
 		const returnSavedObject = () => value;
-		const returnBackgroundApiError = (reason: unknown) => new BackgroundApiError("BrowserStorage", BrowserStorage.SaveMethodThrowInternalError, {key, reason}, this.$debug);
+		const returnBackgroundApiError = (reason: unknown) => new BackgroundApiError("BrowserStorage", Storage.SaveMethodThrowInternalError, {key, reason}, this.$debug);
 		return this.$storage.set(serialize(entry)).then(returnSavedObject).catch(returnBackgroundApiError);
 	}
 	
 	public remove<I extends StorageItemNames<B>>(key: I): Promise<boolean | BackgroundApiError<"BrowserStorage">>
 	{
 		const returnTrueOnSuccess = () => true;
-		const returnBackgroundApiError = (reason: unknown) => new BackgroundApiError("BrowserStorage", BrowserStorage.RemoveMethodThrowInternalError, {key, reason}, this.$debug);
+		const returnBackgroundApiError = (reason: unknown) => new BackgroundApiError("BrowserStorage", Storage.RemoveMethodThrowInternalError, {key, reason}, this.$debug);
 		return this.$storage.remove(key as string).then(returnTrueOnSuccess).catch(returnBackgroundApiError);
 	}
 	

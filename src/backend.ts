@@ -1,7 +1,7 @@
 
 export { SetupEvents } from "./api/backend/SetupEvents";
 export { BackgroundComm } from "./api/backend/BackgroundComm";
-export { BrowserStorage } from "./api/backend/BrowserStorage";
+export { Storage } from "./api/backend/Storage";
 export { NetRequestBlock } from "./api/backend/NetRequestBlock";
 
 export type { BackgroundApiError } from "./api/backend/BackgroundApiError";
