@@ -1,6 +1,6 @@
 import { TypedError } from "../../classes/TypedError";
 import { Debug } from "../../classes/Debug";
-import { BackgroundApiErrorList } from "./BackgroundApiErrorList";
+import { NetRequestRule } from "./NetRequestBlock";
 
 type BackgroundApiErrorVariant = keyof BackgroundApiErrorList;
 type BackgroundApiErrorInfo = BackgroundApiErrorList;
@@ -13,4 +13,21 @@ export class BackgroundApiError<V extends BackgroundApiErrorVariant> extends Typ
 	{
 		super(variant, message, info, null, debug);
 	}
+}
+
+type BrowserTab = browser.tabs.Tab;
+type ObjectKey = string | number | symbol;
+
+export interface BackgroundApiErrorList
+{
+	"BrowserStorage": { key: ObjectKey, reason: unknown },
+	
+	"MessageListenerIsNotFound": {},
+	
+	"NetRequestBlock": { method: string, reason: unknown },
+	"RuleWasNotFound": { id: number, rules: NetRequestRule[] },
+	"RegexpIsNotSupported": { regexp: string, reason: unknown },
+	
+	"NoTabsWasFound": { url: string },
+	"NotificationSendWasntSuccessful": { tabs: BrowserTab[], results: unknown[] } // TODO what type `results` has?
 }
