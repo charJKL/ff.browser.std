@@ -1,8 +1,12 @@
 
+export { ArrayEx } from "./ex/ArrayEx";
+export { DateEx } from "./ex/DateEx";
 export { Debug } from "./ex/Debug";
 export { Event } from "./ex/Event";
-export { MarkedString } from "./ex/MarkedString";
+export { MapEx } from "./ex/MapEx";
 export { MultiMap } from "./ex/MultiMap";
+export { StringEx } from "./ex/StringEx";
+export { StringExMark } from "./ex/StringExMark";
 export { TypedError } from "./ex/TypedError";
 export { Watcher } from "./ex/Watcher";
 

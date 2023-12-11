@@ -1,15 +1,17 @@
+import { DateEx, DateExInterface } from "../DateEx";
+
 declare global
 {
-	interface DateConstructor
+	interface DateConstructor extends DateExInterface
 	{
 		getTimestamp() : number;
 	}
 	interface Date
 	{
-		getTimestamp() : number;
+		
 	}
 }
 Date.getTimestamp = function() : number
 {
-	return Math.floor(Date.now() / 1000); 
+	return DateEx.prototype.getTimestamp();
 }

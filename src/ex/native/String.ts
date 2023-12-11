@@ -1,57 +1,47 @@
-import { MarkedString } from "../MarkedString";
+import { StringExMark } from "../StringExMark";
+import { StringEx, StringExInterface } from "../StringEx";
 
-declare global 
+declare global
 {
-	interface String
+	interface String extends StringExInterface
 	{
-		isEqual(string: string): boolean;
-		isEmpty(): boolean;
-		isNotEmpty(): boolean;
-		prefix(prefix: string): string;
-		unprefix(prefix: string): string;
-		trimPrefix(prefix: string): string;
-		trimSuffix(suffix: string): string;
-		find(search: string): MarkedString;
-		toUrl(): URL;
+		
 	}
 }
 
 String.prototype.isEqual = function(string : string) : boolean
 {
-	return this === string;
+	return StringEx.prototype.isEqual.call(this, string);
 }
 String.prototype.isEmpty = function() : boolean
 {
-	return this.length === 0;
+	return StringEx.prototype.isEmpty.call(this);
 }
 String.prototype.isNotEmpty = function() : boolean
 {
-	return this.length > 0;
+	return StringEx.prototype.isNotEmpty.call(this);
 }
 String.prototype.prefix = function(prefix: string) : string 
 {
-	return prefix + this;
+	return StringEx.prototype.prefix.call(this, prefix);
 }
 String.prototype.unprefix = function(prefix: string) : string
 {
-	if(this.startsWith(prefix) === false) return this.toString();
-	return this.substring(prefix.length);
+	return StringEx.prototype.unprefix.call(this, prefix);
 }
 String.prototype.trimPrefix = function(prefix: string) : string
 {
-	if(this.startsWith(prefix) === false) return this.toString();
-	return this.substring(prefix.length);
+	return StringEx.prototype.trimPrefix.call(this, prefix);
 }
 String.prototype.trimSuffix = function(suffix: string) : string
 {
-	if(this.endsWith(suffix) === false) return this.toString();
-	return this.substring(0, this.length - suffix.length);
+	return StringEx.prototype.trimSuffix.call(this, suffix);
 }
-String.prototype.find = function(search: string) : MarkedString
+String.prototype.find = function(search: string) : StringExMark
 {
-	return (new MarkedString(this)).find(search);
+	return StringEx.prototype.find.call(this, search);
 }
 String.prototype.toUrl = function() : URL
 {
-	return new URL(this.toString());
+	return StringEx.prototype.toUrl.call(this);
 }

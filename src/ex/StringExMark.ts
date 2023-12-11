@@ -1,6 +1,7 @@
 import { isNotUndefined } from "./functions/isUndefined";
+import { StringEx } from "./StringEx";
 
-export class MarkedString extends String
+export class StringExMark extends StringEx
 {
 	private $mark: number | undefined;
 	

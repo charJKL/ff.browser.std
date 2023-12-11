@@ -1,26 +1,26 @@
+import { ArrayEx, ArrayExInterface } from "../ArrayEx";
+
 declare global
 {
-	interface Array<T>
+	interface Array<T> extends ArrayExInterface<T>
 	{
-		contains(item: T): boolean;
-		notContains(item: T) : boolean;
-		isEmpty(): boolean;
-		sortAsNumbers() : Array<T>;
+		
 	}
 }
 Array.prototype.contains = function<T>(item: T) : boolean
 {
-	return this.includes(item);
+	return ArrayEx.prototype.contains.call(this, item);
 }
 Array.prototype.notContains = function<T>(item: T) : boolean
 {
-	return this.includes(item) === false;
+	return ArrayEx.prototype.notContains.call(this, item);
 }
 Array.prototype.isEmpty = function() : boolean
 {
-	return this.length === 0;
+	return ArrayEx.prototype.isEmpty.call(this);
 }
 Array.prototype.sortAsNumbers = function<T>() : Array<T>
 {
-	return this.sort((a, b) => a - b);
+	return ArrayEx.prototype.sortAsNumbers.call(this);
 }
+
