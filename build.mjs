@@ -1,6 +1,8 @@
 import esbuild from "esbuild";
 import { glob } from "glob";
-import { clean } from 'esbuild-plugin-clean';
+import { dtsPlugin } from "esbuild-plugin-d.ts";
+import { clean } from "esbuild-plugin-clean";
+
 
 const natives = await glob("./src/classes/native/*");
 
@@ -25,7 +27,8 @@ const ctx1 = await esbuild.context({
 	bundle: true,
 	plugins:
 	[
-		clean({ patterns: ['./dist/*'] })
+		dtsPlugin(),
+		clean({ patterns: ['./dist/*'] }),
 	]
 });
 
