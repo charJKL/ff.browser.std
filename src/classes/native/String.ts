@@ -1,4 +1,4 @@
-import { MarkedString } from "../classes/MarkedString";
+import { MarkedString } from "../MarkedString";
 
 declare global 
 {
