@@ -5,7 +5,7 @@ import { Debug } from "../../classes/Debug";
 import { MultiMap, IComparable } from "../../classes/MultiMap";
 import { MessageError } from "../MessageError";
 import { isNotNull } from "../../functions/isNull";
-import { isFalse } from "../../functions/isBoolean";
+import { isFalse } from "../../functions/isTrue";
 
 
 type SendResponse = (response?: {}) => void;
