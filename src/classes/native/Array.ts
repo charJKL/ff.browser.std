@@ -1,9 +1,12 @@
-interface Array<T>
+declare global
 {
-	contains(item: T): boolean;
-	notContains(item: T) : boolean;
-	isEmpty(): boolean;
-	sortAsNumbers() : Array<T>;
+	interface Array<T>
+	{
+		contains(item: T): boolean;
+		notContains(item: T) : boolean;
+		isEmpty(): boolean;
+		sortAsNumbers() : Array<T>;
+	}
 }
 Array.prototype.contains = function<T>(item: T) : boolean
 {

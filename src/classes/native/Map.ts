@@ -1,9 +1,13 @@
-interface Map<K, V>
+
+declare global
 {
-	hasNot(key: K) : boolean;
-	getUniqueId(): string;
-	castTo<R>(func: (key: K, value: V) => R) : Map<K, R>;
-	toArray<R>(func: (key: K, value: V) => R) : Array<R>;
+	interface Map<K, V>
+	{
+		hasNot(key: K) : boolean;
+		getUniqueId(): string;
+		castTo<R>(func: (key: K, value: V) => R) : Map<K, R>;
+		toArray<R>(func: (key: K, value: V) => R) : Array<R>;
+	}
 }
 Map.prototype.hasNot= function<K>(key: K) : boolean
 {

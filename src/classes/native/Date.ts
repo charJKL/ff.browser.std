@@ -1,10 +1,13 @@
-interface DateConstructor
+declare global
 {
-	getTimestamp() : number;
-}
-interface Date
-{
-	getTimestamp() : number;
+	interface DateConstructor
+	{
+		getTimestamp() : number;
+	}
+	interface Date
+	{
+		getTimestamp() : number;
+	}
 }
 Date.getTimestamp = function() : number
 {
