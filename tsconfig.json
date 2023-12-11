@@ -9,5 +9,12 @@
 	},
 	"include": [
 		"src/**/*"
+	],
+	"exclude": [
+		/** 
+		 * Because extending native objects has bad long term consequences. During 
+		 * compilation do not consider as if they are included. Using it must be explicit.
+		 */
+		"**/native/*" 
 	]
 }
