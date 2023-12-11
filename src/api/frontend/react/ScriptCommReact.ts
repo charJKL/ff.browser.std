@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef, useMemo } from "react";
-import { ScriptComm, ScriptCommReturn } from "../api/script/ScriptComm";
-import { SupportedMessages, CanOmitArgs, MessageArgs } from "../api/Message";
-import { Supported } from "../api/Message";
-import { SupportedNotifications, NotificationBlueprint, NotificationData, NotificationFilter} from "../api/Message";
-import { ResolveOverloadArgsException } from "../exceptions/ResolveOverloadArgsException";
+import { useState, useEffect, useRef } from "react";
+import { ScriptComm, ScriptCommReturn } from "../ScriptComm";
+import { SupportedMessages, CanOmitArgs, MessageArgs } from "../../Message";
+import { Supported } from "../../Message";
+import { SupportedNotifications, NotificationBlueprint, NotificationData, NotificationFilter} from "../../Message";
+import { ResolveOverloadArgsException } from "../../../exceptions/ResolveOverloadArgsException";
 
 type BackgroundVar<T> = Waiting | T;
 export type BackgroundState<T> = [BackgroundVar<T>, (state: T) => void];
