@@ -4,7 +4,7 @@ import { dtsPlugin } from "esbuild-plugin-d.ts";
 import { clean } from "esbuild-plugin-clean";
 
 
-const natives = await glob("./src/classes/native/*");
+const natives = await glob("./src/ex/native/*");
 
 // TODO Okey but now how to setup tsc --noEmit for type checking?
 // TODO create second script for watch, and share configuration between both
