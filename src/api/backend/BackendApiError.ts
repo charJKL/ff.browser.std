@@ -2,14 +2,14 @@ import { TypedError } from "../../ex/TypedError";
 import { Debug } from "../../ex/Debug";
 import { NetRequestRule } from "./NetRequestBlock";
 
-type BackgroundApiErrorVariant = keyof BackgroundApiErrorList;
-type BackgroundApiErrorInfo = BackgroundApiErrorList;
+type BackendApiErrorVariant = keyof BackendApiErrorList;
+type BackendApiErrorInfo = BackendApiErrorList;
 
-export class BackgroundApiError<V extends BackgroundApiErrorVariant> extends TypedError<V, BackgroundApiErrorInfo[V]>
+export class BackendApiError<V extends BackendApiErrorVariant> extends TypedError<V, BackendApiErrorInfo[V]>
 {
-	private scope = "BackgroundApiErrorScope" as const; // to differentiate from other errors inherited from `TypeError`, important because of duck typing.
+	private scope = "BackendApiErrorScope" as const; // to differentiate from other errors inherited from `TypeError`, important because of duck typing.
 	
-	constructor(variant: V, message: string, info: BackgroundApiErrorInfo[V], debug: Debug)
+	constructor(variant: V, message: string, info: BackendApiErrorInfo[V], debug: Debug)
 	{
 		super(variant, message, info, null, debug);
 	}
@@ -18,7 +18,7 @@ export class BackgroundApiError<V extends BackgroundApiErrorVariant> extends Typ
 type BrowserTab = browser.tabs.Tab;
 type ObjectKey = string | number | symbol;
 
-export interface BackgroundApiErrorList
+export interface BackendApiErrorList
 {
 	"BrowserStorage": { key: ObjectKey, reason: unknown },
 	

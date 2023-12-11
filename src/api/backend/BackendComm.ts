@@ -1,5 +1,5 @@
 import { Message, SupportedMessages, SupportedNotifications, Supported, MessageBlueprint, MessageArgs, NotificationData, MessageSender, MessagePacket, MessageBlueprintParametered } from "../Message";
-import { BackgroundApiError } from "./BackgroundApiError";
+import { BackendApiError } from "./BackendApiError";
 import { Debug } from "../../ex/Debug";
 import { MessageError } from "../MessageError";
 import { MissingListenerException } from "../../exceptions/MissingListenerException";
@@ -33,11 +33,11 @@ export class BackendComm<SM extends SupportedMessages, SN extends SupportedNotif
 	
 	static WantedUrlIsntOnpenedOnAnyTab = "Wanted url isn't opened on any tab.";
 	static NotificationWasntSendSucessfulToAllTabs = "Notification wasnt send sucessfule to all tabs.";
-	public async sendNotification<V extends Supported<SN>>(tabUrl: string, variant: V, args: NotificationData<SN[V]>) : Promise<boolean | BackgroundApiError<"NoTabsWasFound"> | BackgroundApiError<"NotificationSendWasntSuccessful">>
+	public async sendNotification<V extends Supported<SN>>(tabUrl: string, variant: V, args: NotificationData<SN[V]>) : Promise<boolean | BackendApiError<"NoTabsWasFound"> | BackendApiError<"NotificationSendWasntSuccessful">>
 	{
 		this.$debug?.log("BackendComm.sendNotification(), tabUrl=$0, variant=$1, args=$2", Debug.BackgroundNotification, tabUrl, variant, args);
 		const tabs = await browser.tabs.query({url: tabUrl}); // TODO should BackendComm use directly `browser.tabs`? or had inject `BrowserTabs`?
-		if(tabs.isEmpty()) return new BackgroundApiError("NoTabsWasFound", BackendComm.WantedUrlIsntOnpenedOnAnyTab, {url: tabUrl}, this.$debug);
+		if(tabs.isEmpty()) return new BackendApiError("NoTabsWasFound", BackendComm.WantedUrlIsntOnpenedOnAnyTab, {url: tabUrl}, this.$debug);
 		const results = tabs.map(async function sendNotifiactionToTabs(tab: BrowserTab)
 		{
 			if(isUndefined(tab.id)) return;
@@ -46,7 +46,7 @@ export class BackendComm<SM extends SupportedMessages, SN extends SupportedNotif
 			return result;
 		});
 		const wasErrorOccuredDuringSending = (v: unknown) => v instanceof Error;
-		if(results.find(wasErrorOccuredDuringSending)) return new BackgroundApiError("NotificationSendWasntSuccessful", BackendComm.NotificationWasntSendSucessfulToAllTabs, {tabs: tabs, results: results}, this.$debug)
+		if(results.find(wasErrorOccuredDuringSending)) return new BackendApiError("NotificationSendWasntSuccessful", BackendComm.NotificationWasntSendSucessfulToAllTabs, {tabs: tabs, results: results}, this.$debug)
 		return true;
 	}
 	

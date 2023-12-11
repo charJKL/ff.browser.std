@@ -1,4 +1,4 @@
-import { BackgroundApiError } from "./BackgroundApiError";
+import { BackendApiError } from "./BackendApiError";
 import { Debug } from "../../ex/Debug";
 import { hasProp } from "../../ex/functions/hasProp";
 
@@ -23,29 +23,29 @@ export class Storage<B extends StorageBlueprint>
 	static SaveMethodThrowInternalError = "`browser.storage.set()` method throw internal error.";
 	static RemoveMethodThrowInternalError = "`browser.storage.remove()` method throw internal error.";
 	
-	public get<K extends StorageItemNames<B>>(key: K) : Promise<B[K] | BackgroundApiError<"BrowserStorage">>
+	public get<K extends StorageItemNames<B>>(key: K) : Promise<B[K] | BackendApiError<"BrowserStorage">>
 	{
 		const entry = { [key]: this.$blueprint[key] };
 		const unserialize = (obj: StorageBlueprint) => this.decode(obj);
 		const flatReturnedObject = (obj: StorageBlueprint) : B[K] => obj[key as keyof StorageBlueprint] as B[K];
-		const returnBackgroundApiError = (reason: unknown) => new BackgroundApiError("BrowserStorage", Storage.GetMethodThrowInternalError, {key, reason}, this.$debug);
-		return this.$storage.get(entry).then(unserialize).then(flatReturnedObject).catch(returnBackgroundApiError);
+		const returnBackendApiError = (reason: unknown) => new BackendApiError("BrowserStorage", Storage.GetMethodThrowInternalError, {key, reason}, this.$debug);
+		return this.$storage.get(entry).then(unserialize).then(flatReturnedObject).catch(returnBackendApiError);
 	}
 	
-	public save<I extends StorageItemNames<B>>(key: I, value: B[I]) : Promise<B[I] | BackgroundApiError<"BrowserStorage">>
+	public save<I extends StorageItemNames<B>>(key: I, value: B[I]) : Promise<B[I] | BackendApiError<"BrowserStorage">>
 	{
 		const entry = { [key]: value }
 		const serialize = (obj: StorageBlueprint) => this.encode(obj);
 		const returnSavedObject = () => value;
-		const returnBackgroundApiError = (reason: unknown) => new BackgroundApiError("BrowserStorage", Storage.SaveMethodThrowInternalError, {key, reason}, this.$debug);
-		return this.$storage.set(serialize(entry)).then(returnSavedObject).catch(returnBackgroundApiError);
+		const returnBackendApiError = (reason: unknown) => new BackendApiError("BrowserStorage", Storage.SaveMethodThrowInternalError, {key, reason}, this.$debug);
+		return this.$storage.set(serialize(entry)).then(returnSavedObject).catch(returnBackendApiError);
 	}
 	
-	public remove<I extends StorageItemNames<B>>(key: I): Promise<boolean | BackgroundApiError<"BrowserStorage">>
+	public remove<I extends StorageItemNames<B>>(key: I): Promise<boolean | BackendApiError<"BrowserStorage">>
 	{
 		const returnTrueOnSuccess = () => true;
-		const returnBackgroundApiError = (reason: unknown) => new BackgroundApiError("BrowserStorage", Storage.RemoveMethodThrowInternalError, {key, reason}, this.$debug);
-		return this.$storage.remove(key as string).then(returnTrueOnSuccess).catch(returnBackgroundApiError);
+		const returnBackendApiError = (reason: unknown) => new BackendApiError("BrowserStorage", Storage.RemoveMethodThrowInternalError, {key, reason}, this.$debug);
+		return this.$storage.remove(key as string).then(returnTrueOnSuccess).catch(returnBackendApiError);
 	}
 	
 	private encode(blueprint: StorageBlueprint) : StorageBlueprint
