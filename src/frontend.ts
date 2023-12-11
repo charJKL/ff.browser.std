@@ -1,2 +1,2 @@
 
-export { ScriptComm } from "./api/frontend/ScriptComm";
+export { FrontendComm } from "./api/frontend/FrontendComm";

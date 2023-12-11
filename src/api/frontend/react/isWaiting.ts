@@ -1,4 +1,4 @@
-import { Waiting, BackgroundVar } from "./ScriptCommReact";
+import { Waiting, BackgroundVar } from "./FrontendCommReact";
 
 export function isWaiting(data: BackgroundVar<unknown>) : data is Waiting
 {

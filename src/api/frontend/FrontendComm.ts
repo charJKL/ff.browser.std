@@ -9,9 +9,9 @@ import { isFalse } from "../../ex/functions/isTrue";
 
 
 type SendResponse = (response?: {}) => void;
-export type ScriptCommReturn<B extends MessageBlueprint> = MessageError<"FatalResponse"> | ReturnType<B> ;
+export type FrontendCommReturn<B extends MessageBlueprint> = MessageError<"FatalResponse"> | ReturnType<B> ;
 
-export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifications>
+export class FrontendComm<SM extends SupportedMessages, SN extends SupportedNotifications>
 {
 	private $debug: undefined | Debug;
 	private $listeners: MultiMap<keyof SN, NotificationListenerRecord>;
@@ -23,23 +23,23 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 		this.$listeners = new MultiMap();
 	}
 	
-	public async sendMessage<V extends Supported<SM>>(variant: CanOmitArgs<SM,V>) : Promise<ScriptCommReturn<SM[V]>>;
-	public async sendMessage<V extends Supported<SM>>(variant: V, args: MessageArgs<SM[V]>) : Promise<ScriptCommReturn<SM[V]>>;
+	public async sendMessage<V extends Supported<SM>>(variant: CanOmitArgs<SM,V>) : Promise<FrontendCommReturn<SM[V]>>;
+	public async sendMessage<V extends Supported<SM>>(variant: V, args: MessageArgs<SM[V]>) : Promise<FrontendCommReturn<SM[V]>>;
 	public async sendMessage<V extends Supported<SM>>(arg0: unknown, arg1?: unknown) : Promise<unknown>
 	{
 		function resolveArgs(iArgs: IArguments, arg0: unknown, arg1: unknown) : [V, MessageArgs<SM[V]>]
 		{
 			if(iArgs.length === 1) return [arg0 as V, {} as MessageArgs<SM[V]>];
 			if(iArgs.length === 2) return [arg0 as V, arg1 as MessageArgs<SM[V]>];
-			throw new ResolveOverloadArgsException("ScriptComm.sendMessage()");
+			throw new ResolveOverloadArgsException("FrontendComm.sendMessage()");
 		}
 		const [variant, args] = resolveArgs(arguments, arg0, arg1);
 		
-		this.$debug?.logFunction("ScriptComm.sendMessage(), variant=$0, args=$1", Debug.ScriptMessage, variant, args);
+		this.$debug?.logFunction("FrontendComm.sendMessage(), variant=$0, args=$1", Debug.ScriptMessage, variant, args);
 		const packet = Message.prepare(variant, args);
 		const response = await browser.runtime.sendMessage(packet) as MessagePacketResponse; // TODO what if sendMessage throw browser internal exception? is that event possible if I don't fuck up?
 		const result = Message.unpack(response);
-		this.$debug?.log("ScriptComm.sendMessage(), response=$0, result=$1", response, result);
+		this.$debug?.log("FrontendComm.sendMessage(), response=$0, result=$1", response, result);
 		this.$debug?.endFunction();
 		return result;
 	}
@@ -52,7 +52,7 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 		{
 			if(iArgs.length === 2) return [arg0 as V, null, arg1 as NotificationListener<SN[V]>];
 			if(iArgs.length === 3) return [arg0 as V, arg1 as  NotificationFilter<SN[V]> | null, arg2 as NotificationListener<SN[V]>];
-			throw new ResolveOverloadArgsException("ScriptComm.addNotificationListener()");
+			throw new ResolveOverloadArgsException("FrontendComm.addNotificationListener()");
 		}
 		const [variant, filter, listener] = resolveArgs(arguments, arg0, arg1, arg2);
 		this.$listeners.set(variant, new NotificationListenerRecord(filter, listener));
@@ -66,7 +66,7 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 		{
 			if(iArgs.length === 2) return [arg0 as V, null, arg1 as NotificationListener<SN[V]>];
 			if(iArgs.length === 3) return [arg0 as V, arg1 as  NotificationFilter<SN[V]> | null, arg2 as NotificationListener<SN[V]>];
-			throw new ResolveOverloadArgsException("ScriptComm.addNotificationListener()");
+			throw new ResolveOverloadArgsException("FrontendComm.addNotificationListener()");
 		}
 		const [variant, filter, listener] = resolveArgs(arguments, arg0, arg1, arg2);
 		this.$listeners.delete(variant, new NotificationListenerRecord(filter, listener)); 
@@ -74,9 +74,9 @@ export class ScriptComm<SM extends SupportedMessages, SN extends SupportedNotifi
 
 	private async dispatchNotification(packet: MessagePacket, sender: MessageSender, sendResponse: SendResponse) 
 	{
-		this.$debug?.logFunction("ScriptComm.dispatchNotification(), packet.variant=$0, packet.data=$1", Debug.ScriptNotification, packet.variant, packet.data);
+		this.$debug?.logFunction("FrontendComm.dispatchNotification(), packet.variant=$0, packet.data=$1", Debug.ScriptNotification, packet.variant, packet.data);
 		const listeners = this.$listeners.get(packet.variant);
-		this.$debug?.log("ScriptComm.dispatchNotification(), variant=$0, count=$1, listeners=$2", packet.variant, listeners?.length, listeners);
+		this.$debug?.log("FrontendComm.dispatchNotification(), variant=$0, count=$1, listeners=$2", packet.variant, listeners?.length, listeners);
 		listeners.forEach(record => this.dispatchNotificationFilter(record.filter, record.listener, packet.data));
 		this.$debug?.endFunction();
 	}

@@ -1,5 +1,5 @@
 import { NotificationBlueprint } from "../../Message";
-import { Notification } from "./ScriptCommReact";
+import { Notification } from "./FrontendCommReact";
 
 export function wasRaised<T extends Notification<NotificationBlueprint>>(notification: T) : notification is Required<T>
 {
