@@ -1,6 +1,6 @@
 import { BackgroundApiError } from "./BackgroundApiError";
-import { Debug } from "../../classes/Debug";
-import { hasProp } from "../../functions/hasProp";
+import { Debug } from "../../ex/Debug";
+import { hasProp } from "../../ex/functions/hasProp";
 
 type StorageArea = browser.storage.StorageArea;
 type StorageBlueprint = {[key: string]: unknown};

@@ -1,4 +1,4 @@
-import { TypedError, TypedErrorVariant } from "../classes/TypedError";
+import { TypedError, TypedErrorVariant } from "./TypedError";
 
 export function isError<V2 extends Exclude<TypedErrorVariant, V2>, R>(variant: symbol, error: R | TypedError<V2, unknown>) : error is TypedError<V2, any>;
 export function isError<V1 extends V2, V2 extends Exclude<TypedErrorVariant, V2>, R>(variant: V1, error: R | TypedError<V2, unknown>): error is TypedError<V1, unknown>;

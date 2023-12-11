@@ -2,10 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { ScriptComm, ScriptCommReturn } from "../ScriptComm";
 import { SupportedMessages, CanOmitArgs, MessageArgs } from "../../Message";
 import { Supported } from "../../Message";
-import { SupportedNotifications, NotificationBlueprint, NotificationData, NotificationFilter} from "../../Message";
+import { SupportedNotifications, NotificationData, NotificationFilter} from "../../Message";
 import { ResolveOverloadArgsException } from "../../../exceptions/ResolveOverloadArgsException";
 
-type BackgroundVar<T> = Waiting | T;
+export type BackgroundVar<T> = Waiting | T;
 export type BackgroundState<T> = [BackgroundVar<T>, (state: T) => void];
 export type Notification<T> = { wasRaised: boolean } & Partial<T>;
 
@@ -97,18 +97,6 @@ export class ScriptCommReact<SM extends SupportedMessages, SN extends SupportedN
 		const [variant, args] = resolveArgs(arguments, arg0, arg1);
 		return await this.$scriptComm.sendMessage(variant, args);
 	}
-}
-
-export function isWaiting(data: BackgroundVar<unknown>) : data is Waiting
-{
-	if(data instanceof Waiting) return true;
-	return false;
-}
-
-export function wasRaised<T extends Notification<NotificationBlueprint>>(notification: T) : notification is Required<T>
-{
-	if(notification.wasRaised === true) return true;
-	return false;
 }
 
 export class Waiting

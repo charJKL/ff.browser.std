@@ -1,4 +1,4 @@
-import { TypedError} from "../classes/TypedError";
+import { TypedError} from "./TypedError";
 
 export function isSuccess<T>(result: T) : result is Exclude<T, TypedError<string, unknown>>
 {

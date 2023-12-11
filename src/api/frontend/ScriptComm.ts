@@ -1,11 +1,11 @@
 import { Message, MessagePacket, MessagePacketResponse, MessageSender, MessageArgs, CanOmitArgs, Supported, SupportedMessages, SupportedNotifications, NotificationBlueprint, MessageBlueprint} from "../Message";
 import { NotificationListener, NotificationFilter } from "../Message";
 import { ResolveOverloadArgsException } from "../../exceptions/ResolveOverloadArgsException";
-import { Debug } from "../../classes/Debug";
-import { MultiMap, IComparable } from "../../classes/MultiMap";
+import { Debug } from "../../ex/Debug";
+import { MultiMap, IComparable } from "../../ex/MultiMap";
 import { MessageError } from "../MessageError";
-import { isNotNull } from "../../functions/isNull";
-import { isFalse } from "../../functions/isTrue";
+import { isNotNull } from "../../ex/functions/isNull";
+import { isFalse } from "../../ex/functions/isTrue";
 
 
 type SendResponse = (response?: {}) => void;

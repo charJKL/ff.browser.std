@@ -1,4 +1,4 @@
-import { isNotUndefined } from "../functions/isUndefined";
+import { isNotUndefined } from "./functions/isUndefined";
 
 export class MarkedString extends String
 {

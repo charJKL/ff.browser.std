@@ -1,4 +1,4 @@
-import { hasProp } from "../functions/hasProp";
+import { hasProp } from "./functions/hasProp";
 
 export interface IComparable<T>
 {

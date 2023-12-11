@@ -1,7 +1,7 @@
 import { BackgroundApiError } from "./BackgroundApiError";
-import { isError } from "../../functions/isError";
-import { isUndefined } from "../../functions/isUndefined";
-import { Debug } from "../../classes/Debug";
+import { isError } from "../../ex/isError";
+import { isUndefined } from "../../ex/functions/isUndefined";
+import { Debug } from "../../ex/Debug";
 
 
 // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/declarativeNetRequest

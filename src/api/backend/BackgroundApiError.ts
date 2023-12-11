@@ -1,5 +1,5 @@
-import { TypedError } from "../../classes/TypedError";
-import { Debug } from "../../classes/Debug";
+import { TypedError } from "../../ex/TypedError";
+import { Debug } from "../../ex/Debug";
 import { NetRequestRule } from "./NetRequestBlock";
 
 type BackgroundApiErrorVariant = keyof BackgroundApiErrorList;

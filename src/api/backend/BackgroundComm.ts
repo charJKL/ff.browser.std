@@ -1,10 +1,10 @@
 import { Message, SupportedMessages, SupportedNotifications, Supported, MessageBlueprint, MessageArgs, NotificationData, MessageSender, MessagePacket, MessageBlueprintParametered } from "../Message";
 import { BackgroundApiError } from "./BackgroundApiError";
-import { Debug } from "../../classes/Debug";
+import { Debug } from "../../ex/Debug";
 import { MessageError } from "../MessageError";
 import { MissingListenerException } from "../../exceptions/MissingListenerException";
-import { isUndefined } from "../../functions/isUndefined";
-import { isObject } from "../../functions/isObject";
+import { isUndefined } from "../../ex/functions/isUndefined";
+import { isObject } from "../../ex/functions/isObject";
 
 type BrowserTab = browser.tabs.Tab;
 type SendResponse = (response?: {}) => void;

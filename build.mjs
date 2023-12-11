@@ -10,13 +10,12 @@ const natives = await glob("./src/classes/native/*");
 // TODO create second script for watch, and share configuration between both
 const ctx1 = await esbuild.context({
 	entryPoints: [
-		"./src/index.ts",
 		"./src/api.ts",
 		"./src/backend.ts",
-		"./src/frontend.ts",
-		"./src/frontend.react.ts",
-		"./src/functions.ts",
 		"./src/ex.ts",
+		"./src/frontend.react.ts",
+		"./src/frontend.ts",
+		"./src/index.ts",
 		...natives,
 	],
 	external: ["react"],

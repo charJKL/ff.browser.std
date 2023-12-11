@@ -2,15 +2,13 @@
 	"name": "ff-browser-std",
 	"version": "1.0.2",
 	"description": "My Firefox API std lib.",
-	"main": "dist/index.js",
 	"exports": {
-		".": "./dist/index.js",
 		"./api": "./dist/api.js",
 		"./backend": "./dist/backend.js",
+		"./ex": "./dist/ex.js",
 		"./frontend": "./dist/frontend.js",
 		"./frontend.react": "./dist/frontend.react.js",
-		"./functions": "./dist/functions.js",
-		"./ex": "./dist/ex.js"
+		".": "./dist/index.js"
 	},
 	"files": [
 		"/dist"
