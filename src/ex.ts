@@ -14,10 +14,10 @@ export { isError } from "./ex/isError";
 export { isSuccess } from "./ex/isSuccess";
 
 export { hasProp } from "./ex/functions/hasProp";
-export { isArray } from "./ex/functions/isArray";
-export { isNull } from "./ex/functions/isNull";
-export { isNumber } from "./ex/functions/isNumber";
-export { isObject } from "./ex/functions/isObject";
-export { isSymbol } from "./ex/functions/isSymbol";
-export { isTrue } from "./ex/functions/isTrue";
-export { isUndefined } from "./ex/functions/isUndefined";
+export { isArray, isNotArray } from "./ex/functions/isArray";
+export { isNull, isNotNull } from "./ex/functions/isNull";
+export { isNumber, isNotNumber } from "./ex/functions/isNumber";
+export { isObject, isNotObject } from "./ex/functions/isObject";
+export { isSymbol, isNotSymbol } from "./ex/functions/isSymbol";
+export { isTrue, isFalse } from "./ex/functions/isTrue";
+export { isUndefined, isNotUndefined } from "./ex/functions/isUndefined";
