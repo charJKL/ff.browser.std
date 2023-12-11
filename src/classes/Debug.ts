@@ -1,7 +1,7 @@
 import { ResolveOverloadArgsException } from "../exceptions/ResolveOverloadArgsException";
 import { isSymbol, isNotSymbol } from "../functions/isSymbol";
-import "../native/String";
-import "../native/Array";
+import "./native/String"; // TODO I shound't do this, becuase this will affect external project.
+import "./native/Array"; // TODO I shound't do this, becuase this will affect external project.
 
 export class Debug 
 {
