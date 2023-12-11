@@ -1,7 +1,7 @@
 import { ResolveOverloadArgsException } from "../exceptions/ResolveOverloadArgsException";
 import { isSymbol, isNotSymbol } from "./functions/isSymbol";
-import "./native/String"; // TODO I shound't do this, becuase this will affect external project.
-import "./native/Array"; // TODO I shound't do this, becuase this will affect external project.
+import { ArrayEx } from "./ArrayEx";
+import { StringEx } from "./StringEx";
 
 export class Debug 
 {
@@ -55,7 +55,7 @@ export class Debug
 	{
 		function resolveArgs(iArgs: IArguments, arg0: unknown, args: unknown[]) : [string, keyof typeof Debug.Formats, unknown[]]
 		{
-			const styles = Object.getOwnPropertySymbols(Debug.Formats);
+			const styles = new ArrayEx(...Object.getOwnPropertySymbols(Debug.Formats));
 			if(args.length === 0) return [arg0 as string, Debug.None, []];
 			if(args.length > 0 && isNotSymbol(args[0])) return [arg0 as string, Debug.None, args];
 			if(args.length > 0 && isSymbol(args[0]) && styles.notContains(args[0])) return [arg0 as string, Debug.None, args];
@@ -64,9 +64,10 @@ export class Debug
 		}
 		const [rawEntireMessage, rawFormat, rawValues] = resolveArgs(arguments, arg0, args);
 		
-		const [rawMessage, rawVars] = rawEntireMessage.find("=$").findBefore(" ").cut();
+		const rawEntireMessageEx = new StringEx(rawEntireMessage);
+		const [rawMessage, rawVars] = rawEntireMessageEx.find("=$").findBefore(" ").cut();
 		const format = Debug.Formats[rawFormat];
-		const message = rawMessage.trim().trimSuffix(",");
+		const message = new StringEx(rawMessage.trim()).trimSuffix(",");
 		const vars = rawVars.replaceAll(/\$[0-9]/g, "%o");
 		const values = this.transformArgs(rawValues);
 		return { message, format, vars, values };

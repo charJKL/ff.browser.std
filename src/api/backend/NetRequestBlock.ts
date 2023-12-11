@@ -2,7 +2,7 @@ import { BackendApiError } from "./BackendApiError";
 import { isError } from "../../ex/isError";
 import { isUndefined } from "../../ex/functions/isUndefined";
 import { Debug } from "../../ex/Debug";
-
+import { ArrayEx } from "../../ex";
 
 // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/declarativeNetRequest
 type NetRequestRuleCondition = browser.declarativeNetRequest._RuleCondition;
@@ -127,7 +127,7 @@ export class NetRequestBlock
 		const rules = await this.getRules();
 		if(isError("NetRequestBlock", rules)) return rules;
 		
-		const rulesIds = rules.map(r => r.id).sortAsNumbers();
+		const rulesIds = new ArrayEx(...rules.map(r => r.id)).sortAsNumbers();
 		for(let i = 0; i < rulesIds.length; i++)
 		{
 			if(rulesIds[i] !== i + 1) return i + 1;
