@@ -52,6 +52,11 @@ export class StringEx
 		return string.substring(0, this.length - suffix.length);
 	}
 	
+	public static trimBoth(string: string, prefix: string, suffix: string) : string
+	{
+		return StringEx.trimSuffix(StringEx.trimPrefix(string, prefix), suffix);
+	}
+	
 	public static toUrl(string: string)  : URL
 	{
 		return new URL(string);
