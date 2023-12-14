@@ -2,6 +2,8 @@ import { ResolveOverloadArgsException } from "../exceptions/ResolveOverloadArgsE
 import { isSymbol, isNotSymbol } from "./functions/isSymbol";
 import { ArrayEx } from "./ArrayEx";
 import { StringEx } from "./StringEx";
+import { isNull } from "../ex";
+import { InvalidAssumptionException } from "../exceptions/InvalidAssumptionException";
 
 export class Debug 
 {
@@ -55,19 +57,21 @@ export class Debug
 	{
 		function resolveArgs(iArgs: IArguments, arg0: unknown, args: unknown[]) : [string, keyof typeof Debug.Formats, unknown[]]
 		{
-			const styles = new ArrayEx(...Object.getOwnPropertySymbols(Debug.Formats));
+			const styles = Object.getOwnPropertySymbols(Debug.Formats);
 			if(args.length === 0) return [arg0 as string, Debug.None, []];
 			if(args.length > 0 && isNotSymbol(args[0])) return [arg0 as string, Debug.None, args];
-			if(args.length > 0 && isSymbol(args[0]) && styles.notContains(args[0])) return [arg0 as string, Debug.None, args];
-			if(args.length > 0 && isSymbol(args[0]) && styles.contains(args[0])) return [arg0 as string, args[0], args.slice(1)];
+			if(args.length > 0 && isSymbol(args[0]) && ArrayEx.notContains(styles, args[0])) return [arg0 as string, Debug.None, args];
+			if(args.length > 0 && isSymbol(args[0]) && ArrayEx.contains(styles, args[0])) return [arg0 as string, args[0], args.slice(1)];
 			throw new ResolveOverloadArgsException("Debug.log()");
 		}
 		const [rawEntireMessage, rawFormat, rawValues] = resolveArgs(arguments, arg0, args);
 		
-		const rawEntireMessageEx = new StringEx(rawEntireMessage);
-		const [rawMessage, rawVars] = rawEntireMessageEx.find("=$").findBefore(" ").cut();
+		const functionNameAndArgsBorder = StringEx.findBefore(rawEntireMessage, "=?", " ");
+		if(isNull(functionNameAndArgsBorder)) throw new InvalidAssumptionException("Assumes that `rawEntireMessage` would be specific format.");
+		const [rawMessage, rawVars] = StringEx.cut(rawEntireMessage, functionNameAndArgsBorder);
+		if(isNull(rawMessage) || isNull(rawVars)) throw new InvalidAssumptionException("Assumes that `rawEntireMessage` would be specific format.");
 		const format = Debug.Formats[rawFormat];
-		const message = new StringEx(rawMessage.trim()).trimSuffix(",");
+		const message = StringEx.trimSuffix(rawMessage.trim(), ",");
 		const vars = rawVars.replaceAll(/\$[0-9]/g, "%o");
 		const values = this.transformArgs(rawValues);
 		return { message, format, vars, values };

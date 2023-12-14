@@ -1,35 +1,27 @@
 import { InvalidOperationException } from "../exceptions/InvalidOperationException";
 import { isNotNumber } from "./functions/isNumber";
 
-export interface ArrayExInterface<T>
+export class ArrayEx
 {
-	contains(item: T): boolean;
-	notContains(item: T) : boolean;
-	isEmpty(): boolean;
-	sortAsNumbers() : Array<T>;
-}
-
-export class ArrayEx<T> extends Array<T> implements ArrayExInterface<T>
-{
-	public contains(item: T) : boolean
+	public static contains<T>(array: Array<T>, item: T): boolean
 	{
-		return this.includes(item);
+		return array.includes(item);
 	}
 	
-	public notContains(item: T) : boolean
+	public static notContains<T>(array: Array<T>, item: T): boolean
 	{
-		return this.includes(item) === false;
+		return array.includes(item) === false;
 	}
 	
-	public isEmpty() : boolean
+	public static isEmpty<T>(array: Array<T>): boolean
 	{
-		return this.length === 0;
+		return array.length === 0;
 	}
-
-	public sortAsNumbers() : Array<T>
+	
+	public static sortAsNumbers<T>(array: Array<T>): Array<T>
 	{
-		if(this.isEmpty()) return [];
-		if(isNotNumber(this[0])) throw new InvalidOperationException("ArrayEx.sortAsNumbers()");
-		return this.sort((a, b) => (a as number) - (b as number));
+		if(ArrayEx.isEmpty(array)) return [];
+		if(isNotNumber(array[0])) throw new InvalidOperationException("Array doesn't contains numbers.");
+		return array.sort((a, b) => (a as number) - (b as number));
 	}
 }

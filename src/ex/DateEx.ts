@@ -1,11 +1,6 @@
-export interface DateExInterface
+export class DateEx
 {
-	getTimestamp() : number;
-}
-
-export class DateEx extends Date implements DateExInterface
-{
-	public getTimestamp () : number
+	public static getTimestamp() : number
 	{
 		return Math.floor(Date.now() / 1000); 
 	}

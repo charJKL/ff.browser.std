@@ -1,37 +1,29 @@
 
-export interface MapExInterface<K, V>
+export class MapEx
 {
-	hasNot(key: K) : boolean;
-	getUniqueId(): string;
-	castTo<R>(func: (key: K, value: V) => R) : Map<K, R>;
-	toArray<R>(func: (key: K, value: V) => R) : Array<R>;
-}
-
-export class MapEx<K, V> extends Map<K, V> implements MapExInterface<K, V>
-{
-	public hasNot(key: K) : boolean
+	public static hasNot<K, V>(map: Map<K, V>, key: K) : boolean
 	{
-		return this.has(key) === false;
+		return map.has(key) === false;
 	}
 	
-	public getUniqueId() : string
+	public static getUniqueKey<V>(map: Map<string, V>): string
 	{
 		const generateId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
-		let id = generateId() as any; // eslint-disable-line -- TODO what to do now?
-		while(this.has(id)) id = generateId();
+		let id = generateId();
+		while(map.has(id)) id = generateId();
 		return id;
 	}
 	
-	public castTo<K, R>(func: (key: K, value: V) => R) : Map<K, R>
+	public static castTo<K, V, R>(map: Map<K, V>, func: (key: K, value: V) => R) : Map<K, R>
 	{
-		this.forEach((value, key) => this.set(key, func(key as unknown as K, value) as unknown as V)); // TODO how to fix it?
-		return this as unknown as Map<K, R>; // TODO fix it.
+		map.forEach((value, key) => map.set(key, func(key, value) as unknown as V)); // casting to V is necessary
+		return this as unknown as Map<K, R>; // casting to Map<K, R> is necessary
 	}
 	
-	public toArray<R>(func: (key: K, value: V) => R) : Array<R>
+	public static toArray<K, V, R>(map: Map<K, V>, func: (key: K, value: V) => R) : Array<R>
 	{
 		const list: Array<R> = [];
-		this.forEach((value, key) => list.push(func(key, value)));
+		map.forEach((value, key) => list.push(func(key, value)));
 		return list;
 	}
 }

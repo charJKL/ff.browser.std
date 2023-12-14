@@ -1,65 +1,59 @@
-import { StringExMark } from "./StringExMark";
+import { isString } from "./functions/isString";
 
-export interface StringExInterface
+export class StringEx 
 {
-	isEqual(string: string): boolean;
-	isEmpty(): boolean;
-	isNotEmpty(): boolean;
-	prefix(prefix: string): string;
-	unprefix(prefix: string): string;
-	trimPrefix(prefix: string): string;
-	trimSuffix(suffix: string): string;
-	find(search: string): StringExMark;
-	toUrl(): URL;
-}
-
-export class StringEx extends String implements StringExInterface
-{
-	public isEqual(this: string, string : string) : boolean
+	public static isEqual(first: string, second: string) : boolean
 	{
-		return this === string;
+		return first === second;
 	}
 	
-	public isEmpty() : boolean
+	public static isEmpty(string: string) : boolean
 	{
-		return this.length === 0;
+		return string.length === 0;
 	}
 	
-	public isNotEmpty() : boolean
+	public static isNotEmpty(string: string) : boolean
 	{
-		return this.length > 0;
+		return string.length > 0;
 	}
 	
-	public prefix(prefix: string) : string 
+	public static findBefore(string: string, before: string, search: string) : number | null
 	{
-		return prefix + this;
+		const mark = string.indexOf(before);
+		if(mark === -1) return null;
+		const position = string.lastIndexOf(search, mark);
+		if(position === -1) return null;
+		return position;
 	}
 	
-	public unprefix(prefix: string) : string
+	public static cut(string: string, place: string | number) : [string, string] | [null, null]
 	{
-		if(this.startsWith(prefix) === false) return this.toString();
-		return this.substring(prefix.length);
+		const mark = isString(place) ? string.indexOf(place) : place;
+		if(mark === -1 ) return [null, null];
+		const firstPart = string.substring(0, mark);
+		const secondPart = string.substring(mark + 1);
+		return [firstPart, secondPart];
 	}
 	
-	public trimPrefix(prefix: string) : string
+	public static prefix(string: string, prefix: string) : string
 	{
-		if(this.startsWith(prefix) === false) return this.toString();
-		return this.substring(prefix.length);
+		return prefix + string;
 	}
 	
-	public trimSuffix (suffix: string) : string
+	public static trimPrefix(string: string, prefix: string) : string
 	{
-		if(this.endsWith(suffix) === false) return this.toString();
-		return this.substring(0, this.length - suffix.length);
+		if(string.startsWith(prefix) === false) return string;
+		return string.substring(prefix.length);
 	}
 	
-	public find(search: string) : StringExMark
+	public static trimSuffix(string: string, suffix: string) : string
 	{
-		return (new StringExMark(this)).find(search);
+		if(string.endsWith(suffix) === false) return string;
+		return string.substring(0, this.length - suffix.length);
 	}
 	
-	public toUrl() : URL
+	public static toUrl(string: string)  : URL
 	{
-		return new URL(this.toString());
+		return new URL(string);
 	}
 }
