@@ -6,7 +6,6 @@ export { Event } from "./ex/Event";
 export { MapEx } from "./ex/MapEx";
 export { MultiMap } from "./ex/MultiMap";
 export { StringEx } from "./ex/StringEx";
-export { StringExMark } from "./ex/StringExMark";
 export { TypedError } from "./ex/TypedError";
 export { Watcher } from "./ex/Watcher";
 
