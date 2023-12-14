@@ -1,8 +1,8 @@
-export function isTrue(value: boolean)
+export function isTrue(value: any) : value is boolean
 {
-	return value === true;
+	return typeof value === "boolean" && value === true;
 }
-export function isFalse(value: boolean)
+export function isFalse(value: any): value is boolean
 {
-	return value === false;
+	return typeof value === "boolean" && value === false;
 }
