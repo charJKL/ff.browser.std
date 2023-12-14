@@ -1,6 +1,0 @@
-{
-	"rules":
-	{
-		"no-extend-native": "off" // extending native `Classes` has very bad consequences, we agree on them.
-	}
-}

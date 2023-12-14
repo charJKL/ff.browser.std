@@ -6,10 +6,6 @@
 		"./api": "./dist/api.js",
 		"./backend": "./dist/backend.js",
 		"./ex": "./dist/ex.js",
-		"./ex/native/Array": "./dist/ex/native/Array.js",
-		"./ex/native/Date": "./dist/ex/native/Date.js",
-		"./ex/native/Map": "./dist/ex/native/Map.js",
-		"./ex/native/String": "./dist/ex/native/String.js",
 		"./frontend": "./dist/frontend.js",
 		"./frontend.react": "./dist/frontend.react.js",
 		".": "./dist/index.js"
