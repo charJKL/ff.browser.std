@@ -38,7 +38,7 @@ export class BackendComm<SM extends SupportedMessages, SN extends SupportedNotif
 	{
 		this.$debug?.log("BackendComm.sendNotification(), tabUrl=$0, variant=$1, args=$2", Debug.BackgroundNotification, tabUrl, variant, args);
 		const tabs = await browser.tabs.query({url: tabUrl}); // TODO should BackendComm use directly `browser.tabs`? or had inject `BrowserTabs`?
-		if(new ArrayEx(tabs).isEmpty()) return new BackendApiError("NoTabsWasFound", BackendComm.WantedUrlIsntOnpenedOnAnyTab, {url: tabUrl}, this.$debug);
+		if(ArrayEx.isEmpty(tabs)) return new BackendApiError("NoTabsWasFound", BackendComm.WantedUrlIsntOnpenedOnAnyTab, {url: tabUrl}, this.$debug);
 		const results = tabs.map(async function sendNotifiactionToTabs(tab: BrowserTab)
 		{
 			if(isUndefined(tab.id)) return;

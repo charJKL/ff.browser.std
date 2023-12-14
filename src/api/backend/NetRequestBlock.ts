@@ -127,7 +127,7 @@ export class NetRequestBlock
 		const rules = await this.getRules();
 		if(isError("NetRequestBlock", rules)) return rules;
 		
-		const rulesIds = new ArrayEx(...rules.map(r => r.id)).sortAsNumbers();
+		const rulesIds = ArrayEx.sortAsNumbers(rules.map(r => r.id));
 		for(let i = 0; i < rulesIds.length; i++)
 		{
 			if(rulesIds[i] !== i + 1) return i + 1;
