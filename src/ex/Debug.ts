@@ -66,8 +66,7 @@ export class Debug
 		}
 		const [rawEntireMessage, rawFormat, rawValues] = resolveArgs(arguments, arg0, args);
 		
-		const functionNameAndArgsBorder = StringEx.findBefore(rawEntireMessage, "=?", " ");
-		if(isNull(functionNameAndArgsBorder)) throw new InvalidAssumptionException("Assumes that `rawEntireMessage` would be specific format.");
+		const functionNameAndArgsBorder = StringEx.findBefore(rawEntireMessage, "=$", " ") ?? rawEntireMessage.length;
 		const [rawMessage, rawVars] = StringEx.cut(rawEntireMessage, functionNameAndArgsBorder);
 		if(isNull(rawMessage) || isNull(rawVars)) throw new InvalidAssumptionException("Assumes that `rawEntireMessage` would be specific format.");
 		const format = Debug.Formats[rawFormat];
