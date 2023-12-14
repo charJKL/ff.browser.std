@@ -49,7 +49,6 @@ class MultiMapRecord implements IComparable<MultiMapRecord>
 	
 	public isEqual(this: MultiMapRecord, obj: MultiMapRecord) : boolean
 	{
-		console.log("inside", this);
 		return this.first === obj.first && this.second === obj.second;
 	}
 }
